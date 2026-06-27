@@ -38,14 +38,17 @@ export class WebauthnCancelled extends Error {
   }
 }
 
-export async function enrollPasskey(displayName: string): Promise<{
+export async function enrollPasskey(
+  displayName: string,
+  enrollSecret: string,
+): Promise<{
   customToken: string;
   userId: string;
   displayName: string;
 }> {
   const options = await postJson<Parameters<typeof startRegistration>[0]>(
     '/enroll-options',
-    { displayName },
+    { displayName, enrollSecret },
   );
   let attestation;
   try {
@@ -54,7 +57,11 @@ export async function enrollPasskey(displayName: string): Promise<{
     if ((err as Error)?.name === 'NotAllowedError') throw new WebauthnCancelled();
     throw err;
   }
-  return postJson('/enroll-verify', { displayName, attestation });
+  return postJson('/enroll-verify', {
+    displayName,
+    enrollSecret,
+    attestation,
+  });
 }
 
 export async function loginWithPasskey(): Promise<{

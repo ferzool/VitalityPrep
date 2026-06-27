@@ -25,6 +25,7 @@ export default function EnrollScreen() {
   const insets = useSafeAreaInsets();
   const { fonts, t, isRTL } = useTranslation();
   const [displayName, setDisplayName] = useState('');
+  const [enrollSecret, setEnrollSecret] = useState('');
   const [busy, setBusy] = useState(false);
   const [supported, setSupported] = useState(true);
 
@@ -38,9 +39,13 @@ export default function EnrollScreen() {
       Alert.alert(t('auth.enroll'), t('auth.nameRequired'));
       return;
     }
+    if (!enrollSecret.trim()) {
+      Alert.alert(t('auth.enroll'), t('auth.enrollSecretRequired'));
+      return;
+    }
     setBusy(true);
     try {
-      const result = await enrollPasskey(name);
+      const result = await enrollPasskey(name, enrollSecret.trim());
       await signInWithToken(result.customToken, result.displayName);
       // AuthGate handles redirect
     } catch (err) {
@@ -124,6 +129,46 @@ export default function EnrollScreen() {
               isRTL && { writingDirection: 'rtl', textAlign: 'right' },
             ]}
           />
+        </View>
+
+        <View style={styles.field}>
+          <Text
+            style={[
+              fonts.labelCaps,
+              { color: colors.onSurfaceVariant, marginBottom: spacing.stackSm },
+              isRTL && { writingDirection: 'rtl', textAlign: 'right' },
+            ]}
+          >
+            {t('auth.enrollSecret')}
+          </Text>
+          <TextInput
+            value={enrollSecret}
+            onChangeText={setEnrollSecret}
+            placeholder={t('auth.enrollSecretPlaceholder')}
+            placeholderTextColor={colors.outline}
+            autoCapitalize="none"
+            autoCorrect={false}
+            secureTextEntry
+            textContentType="password"
+            style={[
+              styles.input,
+              fonts.bodyLg,
+              { color: colors.onSurface },
+              isRTL && { writingDirection: 'rtl', textAlign: 'right' },
+            ]}
+          />
+          <Text
+            style={[
+              fonts.bodySm,
+              {
+                color: colors.onSurfaceVariant,
+                marginTop: spacing.stackSm,
+              },
+              isRTL && { writingDirection: 'rtl', textAlign: 'right' },
+            ]}
+          >
+            {t('auth.enrollSecretHint')}
+          </Text>
         </View>
 
         {supported ? (

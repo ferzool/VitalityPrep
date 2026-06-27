@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { getAdminDb } from './firebaseAdmin.js';
 
 export const MAX_CREDENTIALS = 2;
@@ -7,6 +7,42 @@ export const CHALLENGE_TTL_MS = 5 * 60 * 1000;
 export const CHALLENGE_COOKIE = 'wa_ch';
 
 export const RP_NAME = 'Vitality Prep';
+
+// Shared-secret gate for /admin/enroll. Only Iman and Niloo know the value.
+// Set WEBAUTHN_ENROLL_SECRET as a Vercel env var. If unset, enrollment is
+// blocked entirely (fail-closed) so a misconfig can never open the door.
+export function assertEnrollSecret(req: VercelRequest): void {
+  const expected = process.env.WEBAUTHN_ENROLL_SECRET ?? '';
+  if (!expected) {
+    throw new EnrollSecretError('enrollment disabled');
+  }
+  const provided = (
+    (req.body as { enrollSecret?: unknown } | undefined)?.enrollSecret ?? ''
+  ) as string;
+  if (typeof provided !== 'string' || provided.length === 0) {
+    throw new EnrollSecretError('enroll secret required');
+  }
+  const a = Buffer.from(provided, 'utf8');
+  const b = Buffer.from(expected, 'utf8');
+  // timingSafeEqual requires equal length; pad to the longer side so we still
+  // do a constant-time compare regardless of input length.
+  const len = Math.max(a.length, b.length);
+  const ap = Buffer.alloc(len);
+  const bp = Buffer.alloc(len);
+  a.copy(ap);
+  b.copy(bp);
+  if (!timingSafeEqual(ap, bp) || a.length !== b.length) {
+    throw new EnrollSecretError('invalid enroll secret');
+  }
+}
+
+export class EnrollSecretError extends Error {
+  status = 403 as const;
+  constructor(message: string) {
+    super(message);
+    this.name = 'EnrollSecretError';
+  }
+}
 
 export function getRpId(req: VercelRequest): string {
   if (process.env.WEBAUTHN_RP_ID) return process.env.WEBAUTHN_RP_ID;

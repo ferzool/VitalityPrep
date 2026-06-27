@@ -2,6 +2,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { generateRegistrationOptions } from '@simplewebauthn/server';
 import { randomUUID } from 'node:crypto';
 import {
+  assertEnrollSecret,
+  EnrollSecretError,
   getRpId,
   listCredentials,
   MAX_CREDENTIALS,
@@ -19,6 +21,15 @@ export default async function handler(
     return;
   }
   try {
+    try {
+      assertEnrollSecret(req);
+    } catch (e) {
+      if (e instanceof EnrollSecretError) {
+        res.status(403).json({ error: e.message });
+        return;
+      }
+      throw e;
+    }
     const { displayName } = (req.body ?? {}) as { displayName?: string };
     const name = (displayName ?? '').trim();
     if (!name) {

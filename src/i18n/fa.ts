@@ -115,6 +115,10 @@ export const fa: Record<TranslationKey, string> = {
   'auth.displayName': 'نام نمایشی',
   'auth.displayNamePlaceholder': 'مثلاً نیلوفر',
   'auth.nameRequired': 'لطفاً یک نام وارد کنید.',
+  'auth.enrollSecret': 'کد دعوت',
+  'auth.enrollSecretPlaceholder': 'کد محرمانه',
+  'auth.enrollSecretHint': 'فقط افرادی که کد دعوت را می‌دانند می‌توانند پس‌کی ثبت کنند.',
+  'auth.enrollSecretRequired': 'لطفاً کد دعوت را وارد کنید.',
   'auth.unsupportedBrowser': 'این مرورگر از پس‌کی پشتیبانی نمی‌کند. از Safari یا Chrome استفاده کنید.',
 
   'addRecipe.title': 'دستور جدید',

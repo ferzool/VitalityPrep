@@ -113,6 +113,10 @@ export const de = {
   'auth.displayName': 'Anzeigename',
   'auth.displayNamePlaceholder': 'z. B. Iman',
   'auth.nameRequired': 'Bitte gib einen Namen ein.',
+  'auth.enrollSecret': 'Einladungscode',
+  'auth.enrollSecretPlaceholder': 'Geheimer Code',
+  'auth.enrollSecretHint': 'Nur Personen mit dem Einladungscode können einen Passkey registrieren.',
+  'auth.enrollSecretRequired': 'Bitte gib den Einladungscode ein.',
   'auth.unsupportedBrowser': 'Dieser Browser unterstützt keine Passkeys. Verwende Safari oder Chrome.',
 
   'addRecipe.title': 'Neues Rezept',

@@ -4,9 +4,11 @@ import {
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
 import {
+  assertEnrollSecret,
   bufferToBase64Url,
   clearChallengeCookie,
   consumeChallenge,
+  EnrollSecretError,
   getOrigin,
   getRpId,
   listCredentials,
@@ -26,6 +28,15 @@ export default async function handler(
     return;
   }
   try {
+    try {
+      assertEnrollSecret(req);
+    } catch (e) {
+      if (e instanceof EnrollSecretError) {
+        res.status(403).json({ error: e.message });
+        return;
+      }
+      throw e;
+    }
     const challengeId = readChallengeCookie(req);
     if (!challengeId) {
       res.status(400).json({ error: 'missing challenge' });
