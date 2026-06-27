@@ -1,4 +1,4 @@
-# Vitality Prep
+# Vitality Prep 
 
 A bilingual (German / Persian) iOS meal-prep app built with **Expo** + **React Native**.
 Designed to work on Windows — you do **not** need a Mac to run or test it.
