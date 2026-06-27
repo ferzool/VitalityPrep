@@ -2,6 +2,9 @@
   "name": "vitality-prep",
   "version": "1.0.0",
   "main": "expo-router/entry",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -50,6 +53,7 @@
     "typescript": "^5.3.3"
   },
   "overrides": {
+    "jose": "^5.10.0",
     "@babel/preset-env": "7.29.5",
     "@babel/preset-react": "7.28.5",
     "@babel/preset-typescript": "7.28.5",
