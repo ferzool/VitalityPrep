@@ -4,6 +4,9 @@ import {
   getAuth,
   type Auth,
   inMemoryPersistence,
+  indexedDBLocalPersistence,
+  browserLocalPersistence,
+  setPersistence,
 } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
@@ -25,6 +28,15 @@ let auth: Auth;
 try {
   if (Platform.OS === 'web') {
     auth = getAuth(app);
+    // iOS Safari can hang on the default persistence chain; force a fallback
+    // chain that fails fast to in-memory if storage is unavailable.
+    if (typeof window !== 'undefined') {
+      void setPersistence(auth, indexedDBLocalPersistence).catch(() =>
+        setPersistence(auth, browserLocalPersistence).catch(() =>
+          setPersistence(auth, inMemoryPersistence).catch(() => {}),
+        ),
+      );
+    }
   } else {
     auth = initializeAuth(app, { persistence: inMemoryPersistence });
   }

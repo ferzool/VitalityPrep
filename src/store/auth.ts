@@ -29,7 +29,25 @@ let started = false;
 export function startAuthListener() {
   if (started) return;
   started = true;
-  onAuthStateChanged(auth, (user) => {
-    useAuth.getState().setUser(user);
-  });
+  const safety = setTimeout(() => {
+    if (useAuth.getState().initializing) {
+      useAuth.getState().setUser(null);
+    }
+  }, 3000);
+  try {
+    onAuthStateChanged(
+      auth,
+      (user) => {
+        clearTimeout(safety);
+        useAuth.getState().setUser(user);
+      },
+      () => {
+        clearTimeout(safety);
+        useAuth.getState().setUser(null);
+      },
+    );
+  } catch {
+    clearTimeout(safety);
+    useAuth.getState().setUser(null);
+  }
 }
