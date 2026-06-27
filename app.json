@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Vitality Prep",
+    "slug": "vitality-prep",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "vitalityprep",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.example.vitalityprep",
+      "infoPlist": {
+        "CFBundleDocumentTypes": [
+          {
+            "CFBundleTypeName": "Vitality Prep Recipe",
+            "CFBundleTypeRole": "Editor",
+            "LSHandlerRank": "Owner",
+            "LSItemContentTypes": ["com.example.vitalityprep.myrecipe"]
+          }
+        ],
+        "UTExportedTypeDeclarations": [
+          {
+            "UTTypeIdentifier": "com.example.vitalityprep.myrecipe",
+            "UTTypeDescription": "Vitality Prep Recipe",
+            "UTTypeConformsTo": ["public.zip-archive", "public.data"],
+            "UTTypeTagSpecification": {
+              "public.filename-extension": ["myrecipe"],
+              "public.mime-type": ["application/x-myrecipe"]
+            }
+          }
+        ]
+      }
+    },
+    "android": {
+      "package": "com.example.vitalityprep"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-localization"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

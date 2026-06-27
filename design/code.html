@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vitality Prep - Persian Grilled Saffron Chicken</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-surface": "#2d312e",
+                    "tertiary-container": "#727574",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed": "#dce4de",
+                    "surface-container": "#ecefea",
+                    "surface-bright": "#f7faf5",
+                    "on-surface-variant": "#434844",
+                    "on-tertiary-fixed": "#191c1b",
+                    "primary-fixed": "#d2e8d8",
+                    "on-secondary-fixed-variant": "#414944",
+                    "primary-container": "#66796c",
+                    "on-tertiary-fixed-variant": "#444746",
+                    "outline-variant": "#c3c8c2",
+                    "on-secondary-fixed": "#161d19",
+                    "tertiary-fixed-dim": "#c5c7c5",
+                    "secondary": "#58605b",
+                    "tertiary-fixed": "#e1e3e1",
+                    "inverse-on-surface": "#eff2ed",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#fbfdfb",
+                    "surface": "#f7faf5",
+                    "secondary-container": "#dae2db",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f1f4f0",
+                    "inverse-primary": "#b7ccbc",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#b7ccbc",
+                    "surface-dim": "#d8dbd6",
+                    "secondary-fixed-dim": "#c0c8c2",
+                    "on-primary-fixed": "#0d1f15",
+                    "primary": "#4d6054",
+                    "surface-container-highest": "#e0e3df",
+                    "tertiary": "#595d5b",
+                    "on-background": "#191c1a",
+                    "on-primary-fixed-variant": "#384b3f",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#506356",
+                    "on-secondary-container": "#5c645f",
+                    "surface-container-high": "#e6e9e4",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#191c1a",
+                    "background": "#f7faf5",
+                    "outline": "#737873",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e0e3df",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#f6fff6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "20px",
+                    "stack-lg": "24px",
+                    "margin-tablet": "40px",
+                    "gutter": "16px",
+                    "base": "8px",
+                    "stack-md": "12px",
+                    "stack-sm": "4px"
+            },
+            "fontFamily": {
+                    "display-lg-mobile": ["Plus Jakarta Sans"],
+                    "label-caps": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "numeric-data": ["Inter"],
+                    "display-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "display-lg-mobile": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["17px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-sm": ["15px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "numeric-data": ["18px", {"lineHeight": "22px", "fontWeight": "600"}],
+                    "display-lg": ["34px", {"lineHeight": "41px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .ingredient-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ingredient-checkbox:checked + label {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+        .ingredient-checkbox:checked ~ .ingredient-card-bg {
+            background-color: #dce4de; /* secondary-fixed / sage tint */
+        }
+        ::-webkit-scrollbar {
+            width: 0px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-lg selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar (From JSON Anchor) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md flex justify-between items-center px-margin-mobile h-16 w-full">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform text-primary">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-primary dark:text-primary-fixed">Vitality Prep</h1>
+</div>
+<div class="flex items-center gap-4">
+<!-- DE | FA Toggle -->
+<div class="bg-secondary-container rounded-full px-3 py-1 flex items-center gap-2 cursor-pointer active:scale-95 transition-all">
+<span class="font-label-caps text-label-caps text-primary font-bold">DE</span>
+<div class="w-[1px] h-3 bg-outline-variant"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">FA</span>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional, clean studio portrait of a fit individual with glowing skin, representing a health-conscious lifestyle. The lighting is soft and natural, emphasizing a minimalist and premium aesthetic. The background is a soft, off-white surface-bright tone that feels calm and nurturing, aligning with a high-end culinary editorial look." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8HvPnr16NGUzCvYN2XFd1BqVaPy7S-g8aH_LU3E8Dt1_WH-ZE-fV_o_1p80EnDEqzy9navkyy-SAPyi2Bid2HrPsHlD1Run_KjalVNaM1-QNXmMmiO9pWT8QwuVXfqVOdO1L6hYX3JgSKqQXmHVc-168ae7EyD-8NT_5I4XMkHscyRLi4KIQyQGgjJS1lrEw_w5IdF_8fAi3MWSVNvXrkxlAk4paBtqtsCeSUxgHWFp_nRxR--JA1ExabQ-y7D3HHMkhiL7SzU0Yu"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-16 pb-32">
+<!-- Section: Hero Image & Key Data -->
+<section class="relative w-full h-[397px] overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+<div class="w-full h-full bg-cover bg-center" data-alt="A high-end culinary editorial photograph of Persian Grilled Saffron Chicken (Joojeh Kabab). The succulent chicken pieces are golden-yellow from saffron, charred perfectly on the edges, and served on a minimalist white ceramic platter. Garnished with grilled tomatoes and vibrant green herbs. The lighting is bright and airy, casting soft shadows on a clean, light-colored wooden table, evoking a sense of sophisticated vitality and effortless health." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAWMnNHzcJrI1b2hIWQCSk2mLRV62KsvgDMdTplKV_-EhfEbKZHInIkEC22CQNso0iOZzHAqCvUSrSjcUZmo8rc28K3YRcXdFGow_8tzpYwciykjkWsvqB5st80AErCLMCqRB7rtA_Kr2kcdaPuauMkLG3VfEUd0B5bqnjFowURXHCXbCwy77Xmz9sL4ahIW4TlDEmcszKYtdI1AQ8FRMIGc8TTu7qTlIrPaG0YkoQ_XBqEU-GLDD6RbsZPwLWgHvAiKU5Aq3XhE93w')"></div>
+<div class="absolute bottom-margin-mobile left-margin-mobile z-20 flex flex-col gap-2">
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-white leading-tight">Persian Grilled Saffron Chicken</h2>
+<div class="flex items-center gap-3">
+<div class="bg-primary px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
+<span class="material-symbols-outlined text-white text-[18px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-numeric-data text-numeric-data text-white">480 kcal</span>
+</div>
+<div class="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/30">
+<span class="material-symbols-outlined text-white text-[18px]">schedule</span>
+<span class="font-label-caps text-label-caps text-white">Prep: 25 min</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Macros Bento -->
+<section class="px-margin-mobile -mt-6 relative z-30 grid grid-cols-3 gap-3">
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-[0px_4px_20px_rgba(124,144,130,0.08)] border border-[#E8F0E9] flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-secondary uppercase mb-1">Protein</span>
+<span class="font-numeric-data text-numeric-data text-primary">42g</span>
+<div class="w-full h-1 bg-primary-fixed rounded-full mt-2">
+<div class="w-3/4 h-full bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-[0px_4px_20px_rgba(124,144,130,0.08)] border border-[#E8F0E9] flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-secondary uppercase mb-1">Carbs</span>
+<span class="font-numeric-data text-numeric-data text-primary">12g</span>
+<div class="w-full h-1 bg-primary-fixed rounded-full mt-2">
+<div class="w-1/4 h-full bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-[0px_4px_20px_rgba(124,144,130,0.08)] border border-[#E8F0E9] flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-secondary uppercase mb-1">Fat</span>
+<span class="font-numeric-data text-numeric-data text-primary">28g</span>
+<div class="w-full h-1 bg-primary-fixed rounded-full mt-2">
+<div class="w-1/2 h-full bg-primary rounded-full"></div>
+</div>
+</div>
+</section>
+<!-- Section 1: Ingredients -->
+<section class="mt-stack-lg px-margin-mobile">
+<div class="flex justify-between items-end mb-4">
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface">Ingredients</h3>
+<span class="font-label-caps text-label-caps text-secondary">6 items</span>
+</div>
+<div class="space-y-3">
+<!-- Ingredient Item 1 -->
+<div class="relative group">
+<input class="hidden ingredient-checkbox" id="ing-1" type="checkbox"/>
+<div class="ingredient-card-bg absolute inset-0 bg-surface-container-lowest border border-[#E8F0E9] rounded-xl transition-colors duration-300"></div>
+<div class="relative px-4 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<label class="w-6 h-6 rounded border-2 border-outline-variant flex items-center justify-center cursor-pointer active:scale-90 transition-transform" for="ing-1">
+<span class="material-symbols-outlined text-primary text-[20px] scale-0 transition-transform">check</span>
+</label>
+<label class="flex flex-col cursor-pointer" for="ing-1">
+<span class="font-body-lg text-on-surface">Chicken Breast</span>
+<span class="font-numeric-data text-body-sm text-secondary">200g</span>
+</label>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-primary hover:bg-primary-container/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined">shopping_basket</span>
+</button>
+</div>
+</div>
+<!-- Ingredient Item 2 -->
+<div class="relative group">
+<input class="hidden ingredient-checkbox" id="ing-2" type="checkbox"/>
+<div class="ingredient-card-bg absolute inset-0 bg-surface-container-lowest border border-[#E8F0E9] rounded-xl transition-colors duration-300"></div>
+<div class="relative px-4 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<label class="w-6 h-6 rounded border-2 border-outline-variant flex items-center justify-center cursor-pointer active:scale-90 transition-transform" for="ing-2">
+<span class="material-symbols-outlined text-primary text-[20px] scale-0 transition-transform">check</span>
+</label>
+<label class="flex flex-col cursor-pointer" for="ing-2">
+<span class="font-body-lg text-on-surface">Saffron (Bloomed)</span>
+<span class="font-numeric-data text-body-sm text-secondary">0.5g</span>
+</label>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-primary hover:bg-primary-container/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined">shopping_basket</span>
+</button>
+</div>
+</div>
+<!-- Ingredient Item 3 -->
+<div class="relative group">
+<input class="hidden ingredient-checkbox" id="ing-3" type="checkbox"/>
+<div class="ingredient-card-bg absolute inset-0 bg-surface-container-lowest border border-[#E8F0E9] rounded-xl transition-colors duration-300"></div>
+<div class="relative px-4 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<label class="w-6 h-6 rounded border-2 border-outline-variant flex items-center justify-center cursor-pointer active:scale-90 transition-transform" for="ing-3">
+<span class="material-symbols-outlined text-primary text-[20px] scale-0 transition-transform">check</span>
+</label>
+<label class="flex flex-col cursor-pointer" for="ing-3">
+<span class="font-body-lg text-on-surface">Greek Yogurt</span>
+<span class="font-numeric-data text-body-sm text-secondary">50g</span>
+</label>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-primary hover:bg-primary-container/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined">shopping_basket</span>
+</button>
+</div>
+</div>
+<!-- Ingredient Item 4 -->
+<div class="relative group">
+<input class="hidden ingredient-checkbox" id="ing-4" type="checkbox"/>
+<div class="ingredient-card-bg absolute inset-0 bg-surface-container-lowest border border-[#E8F0E9] rounded-xl transition-colors duration-300"></div>
+<div class="relative px-4 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<label class="w-6 h-6 rounded border-2 border-outline-variant flex items-center justify-center cursor-pointer active:scale-90 transition-transform" for="ing-4">
+<span class="material-symbols-outlined text-primary text-[20px] scale-0 transition-transform">check</span>
+</label>
+<label class="flex flex-col cursor-pointer" for="ing-4">
+<span class="font-body-lg text-on-surface">Yellow Onion</span>
+<span class="font-numeric-data text-body-sm text-secondary">100g</span>
+</label>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-primary hover:bg-primary-container/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined">shopping_basket</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Instructions -->
+<section class="mt-stack-lg px-margin-mobile">
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface mb-4">Instructions</h3>
+<div class="space-y-6">
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center font-numeric-data text-on-primary-container">1</div>
+<div class="flex flex-col">
+<p class="font-body-lg text-on-surface">Thinly slice onions and combine with yogurt, bloomed saffron, lemon juice, and salt in a large bowl.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-surface-container flex items-center justify-center font-numeric-data text-secondary">2</div>
+<div class="flex flex-col">
+<p class="font-body-lg text-on-surface">Cut chicken into 2-inch cubes. Mix into marinade and refrigerate for at least 4 hours (ideally overnight).</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-surface-container flex items-center justify-center font-numeric-data text-secondary">3</div>
+<div class="flex flex-col">
+<p class="font-body-lg text-on-surface">Thread chicken onto flat skewers. Grill over high heat for 12-15 minutes, turning occasionally until charred and juicy.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (From JSON Anchor - Recipes Active) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center pt-stack-sm pb-10 px-gutter bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">restaurant_menu</span>
+<span class="font-label-caps text-label-caps">Recipes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary-container active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">shopping_basket</span>
+<span class="font-label-caps text-label-caps">List</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary-container active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-caps text-label-caps">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for checkbox state
+        document.querySelectorAll('.ingredient-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const checkIcon = this.parentElement.querySelector('.material-symbols-outlined');
+                if (this.checked) {
+                    checkIcon.classList.remove('scale-0');
+                    checkIcon.classList.add('scale-100');
+                } else {
+                    checkIcon.classList.remove('scale-100');
+                    checkIcon.classList.add('scale-0');
+                }
+            });
+        });
+
+        // Language toggle simple simulation
+        const langToggle = document.querySelector('.bg-secondary-container');
+        langToggle.addEventListener('click', () => {
+            const de = langToggle.querySelector('span:first-child');
+            const fa = langToggle.querySelector('span:last-child');
+            de.classList.toggle('text-primary');
+            de.classList.toggle('font-bold');
+            de.classList.toggle('text-on-surface-variant');
+            fa.classList.toggle('text-primary');
+            fa.classList.toggle('font-bold');
+            fa.classList.toggle('text-on-surface-variant');
+        });
+    </script>
+</body></html>
