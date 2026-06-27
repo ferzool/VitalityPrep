@@ -7,9 +7,10 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useSettings } from '../store/settings';
 import { colors, radius } from '../theme';
 
-export function LanguageToggle() {
+export function LanguageToggle({ variant = 'light' }: { variant?: 'light' | 'onDark' }) {
   const toggle = useSettings((s) => s.toggleLocale);
   const { locale, fonts } = useTranslation();
+  const isDark = variant === 'onDark';
 
   const sliderStyle = useAnimatedStyle(() => ({
     transform: [
@@ -28,6 +29,7 @@ export function LanguageToggle() {
       onPress={toggle}
       style={({ pressed }) => [
         styles.container,
+        isDark ? styles.containerDark : styles.containerLight,
         { opacity: pressed ? 0.85 : 1 },
       ]}
     >
@@ -37,19 +39,27 @@ export function LanguageToggle() {
           style={[
             fonts.labelCaps,
             styles.label,
-            locale === 'de' ? styles.active : styles.inactive,
+            locale === 'de'
+              ? styles.active
+              : isDark
+                ? styles.inactiveDark
+                : styles.inactive,
           ]}
         >
           DE
         </Animated.Text>
       </View>
-      <View style={styles.divider} />
+      <View style={[styles.divider, isDark && styles.dividerDark]} />
       <View style={styles.segment}>
         <Animated.Text
           style={[
             fonts.labelCaps,
             styles.label,
-            locale === 'fa' ? styles.active : styles.inactive,
+            locale === 'fa'
+              ? styles.active
+              : isDark
+                ? styles.inactiveDark
+                : styles.inactive,
           ]}
         >
           FA
@@ -63,11 +73,16 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.secondaryContainer,
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 6,
     overflow: 'hidden',
+  },
+  containerLight: {
+    backgroundColor: colors.secondaryContainer,
+  },
+  containerDark: {
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   slider: {
     position: 'absolute',
@@ -97,10 +112,16 @@ const styles = StyleSheet.create({
   inactive: {
     color: colors.onSurfaceVariant,
   },
+  inactiveDark: {
+    color: 'rgba(255,255,255,0.78)',
+  },
   divider: {
     width: 1,
     height: 12,
     backgroundColor: colors.outlineVariant,
     marginHorizontal: 2,
+  },
+  dividerDark: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
   },
 });

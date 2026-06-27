@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeInsets } from '../hooks/useSafeInsets';
@@ -20,10 +21,16 @@ export function AppHeader({ title, showBack, onBack }: AppHeaderProps) {
   const insets = useSafeInsets();
   const router = useRouter();
   const { fonts, t, isRTL } = useTranslation();
-  const headlineColor = colors.primary;
+  const headlineColor = colors.onPrimary;
 
   return (
     <View style={[styles.wrapper, { paddingTop: Math.max(insets.top, 12) + 4 }]}>
+      <LinearGradient
+        colors={['#5c6f63', '#3f5247']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
       <View
         style={[
           styles.row,
@@ -62,7 +69,7 @@ export function AppHeader({ title, showBack, onBack }: AppHeaderProps) {
             { flexDirection: isRTL ? 'row-reverse' : 'row' },
           ]}
         >
-          <LanguageToggle />
+          <LanguageToggle variant="onDark" />
           <Pressable
             onPress={() => router.push('/profile')}
             hitSlop={10}
@@ -88,11 +95,10 @@ export function AppHeader({ title, showBack, onBack }: AppHeaderProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.primary,
     paddingHorizontal: spacing.marginMobile,
     paddingBottom: spacing.stackMd,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.outlineVariant,
+    overflow: 'hidden',
   },
   row: {
     height: 56,
@@ -121,6 +127,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.outlineVariant,
+    borderColor: 'rgba(255,255,255,0.4)',
   },
 });

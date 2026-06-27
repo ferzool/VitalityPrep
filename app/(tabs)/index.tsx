@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Link, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
@@ -214,9 +215,18 @@ export default function RecipesScreen() {
         onPress={() => router.push('/recipe/new')}
         style={({ pressed }) => [
           styles.fab,
-          { bottom: 80 + insets.bottom, opacity: pressed ? 0.85 : 1 },
+          {
+            bottom: 72 + insets.bottom,
+            transform: [{ scale: pressed ? 0.94 : 1 }],
+          },
         ]}
       >
+        <LinearGradient
+          colors={['#5c6f63', '#3f5247']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
         <Icon name="add" size={28} color={colors.onPrimary} />
       </Pressable>
     </View>
@@ -303,16 +313,16 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: spacing.marginMobile,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.32,
-    shadowRadius: 8,
-    elevation: 6,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    elevation: 10,
   },
 });
