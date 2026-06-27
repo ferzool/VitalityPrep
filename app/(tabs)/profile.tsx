@@ -1,8 +1,6 @@
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
@@ -14,23 +12,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader } from '../../src/components/AppHeader';
 import { Icon, type IconName } from '../../src/components/Icon';
 import { LanguageToggle } from '../../src/components/LanguageToggle';
-import { QrScannerModal } from '../../src/components/QrScannerModal';
 import { useTranslation } from '../../src/hooks/useTranslation';
-import {
-  BackupCancelled,
-  BackupSharingUnavailable,
-  exportBackup,
-  importBackup,
-} from '../../src/lib/backup';
-import {
-  importRecipeFromPicker,
-  ShareCancelled,
-} from '../../src/lib/recipeShare';
+import { signOutUser } from '../../src/lib/auth';
+import { useAuth } from '../../src/store/auth';
 import { usePlanner } from '../../src/store/planner';
 import { useRecipes } from '../../src/store/recipes';
 import { useShopping } from '../../src/store/shopping';
 import { cardShadow, colors, radius, spacing } from '../../src/theme';
-import type { Recipe } from '../../src/types';
 
 interface RowProps {
   icon: IconName;
@@ -113,13 +101,11 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { fonts, t, isRTL } = useTranslation();
-  const resetCustom = useRecipes((s) => s.resetCustom);
-  const addOrUpdateByName = useRecipes((s) => s.addOrUpdateByName);
+  const currentUser = useAuth((s) => s.currentUser);
   const clearShopping = useShopping((s) => s.clearAll);
   const clearPlanner = usePlanner((s) => s.clearWeek);
+  const resetCustom = useRecipes((s) => s.resetCustom);
   const version = Constants.expoConfig?.version ?? '1.0.0';
-  const [busy, setBusy] = useState<'export' | 'import' | null>(null);
-  const [scannerVisible, setScannerVisible] = useState(false);
 
   const onResetRecipes = () => {
     Alert.alert(t('profile.title'), t('profile.resetRecipesConfirm'), [
@@ -142,81 +128,17 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const onExport = async () => {
-    if (busy) return;
-    setBusy('export');
-    try {
-      await exportBackup();
-    } catch (err) {
-      if (err instanceof BackupSharingUnavailable) {
-        Alert.alert(t('profile.export'), t('profile.sharingUnavailable'));
-      } else {
-        Alert.alert(t('profile.export'), t('profile.exportError'));
-      }
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const runImport = async () => {
-    setBusy('import');
-    try {
-      const result = await importBackup();
-      Alert.alert(
-        t('profile.importSuccess'),
-        `${result.recipeCount} ${t('recipes.count')} · ${result.shoppingCount} ${t('shopping.itemCount')} · ${result.plannedSlotCount} ${t('meal.lunch')}`,
-      );
-    } catch (err) {
-      if (err instanceof BackupCancelled) {
-        // user dismissed picker
-      } else {
-        Alert.alert(t('profile.import'), t('profile.importError'));
-      }
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const onImport = () => {
-    if (busy) return;
-    Alert.alert(t('profile.import'), t('profile.importConfirm'), [
+  const onSignOut = () => {
+    Alert.alert(t('auth.signOut'), t('auth.signOutConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), style: 'destructive', onPress: runImport },
+      {
+        text: t('auth.signOut'),
+        style: 'destructive',
+        onPress: async () => {
+          await signOutUser();
+        },
+      },
     ]);
-  };
-
-  const onImportRecipe = async () => {
-    if (busy) return;
-    setBusy('import');
-    try {
-      const recipe = await importRecipeFromPicker();
-      const { id, isUpdate } = addOrUpdateByName(recipe);
-      Alert.alert(
-        isUpdate ? t('recipe.importedUpdated') : t('recipe.importedSuccess'),
-        recipe.name.de || recipe.name.fa,
-      );
-      setTimeout(() => router.push(`/recipe/${id}`), 200);
-    } catch (err) {
-      if (err instanceof ShareCancelled) {
-        // user cancelled
-      } else {
-        Alert.alert(t('recipe.importTitle'), t('recipe.importError'));
-      }
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const onQrScanned = (recipe: Recipe) => {
-    setScannerVisible(false);
-    const { id, isUpdate } = addOrUpdateByName(recipe);
-    setTimeout(() => {
-      Alert.alert(
-        isUpdate ? t('recipe.importedUpdated') : t('recipe.importedSuccess'),
-        recipe.name.de || recipe.name.fa,
-      );
-      router.push(`/recipe/${id}`);
-    }, 250);
   };
 
   return (
@@ -238,6 +160,29 @@ export default function ProfileScreen() {
           {t('profile.title')}
         </Text>
 
+        {currentUser ? (
+          <>
+            <SectionTitle>{t('auth.account')}</SectionTitle>
+            <View style={styles.card}>
+              <SettingsRow
+                icon="person"
+                label={currentUser.displayName ?? t('auth.account')}
+                hint={t('auth.signedInHint')}
+              />
+              <View style={styles.divider} />
+              <SettingsRow
+                icon="logout"
+                label={t('auth.signOut')}
+                onPress={onSignOut}
+                destructive
+                trailing={
+                  <Icon name="chevron-right" size={20} color={colors.outline} />
+                }
+              />
+            </View>
+          </>
+        ) : null}
+
         <SectionTitle>{t('profile.language')}</SectionTitle>
         <View style={styles.card}>
           <SettingsRow
@@ -255,57 +200,6 @@ export default function ProfileScreen() {
             label={t('profile.aiPrompt')}
             hint={t('profile.aiPromptHint')}
             onPress={() => router.push('/ai-prompt')}
-            trailing={
-              <Icon name="chevron-right" size={20} color={colors.outline} />
-            }
-          />
-        </View>
-
-        <SectionTitle>{t('profile.backup')}</SectionTitle>
-        <View style={styles.card}>
-          <SettingsRow
-            icon="share"
-            label={t('profile.export')}
-            hint={t('profile.exportHint')}
-            onPress={onExport}
-            trailing={
-              busy === 'export' ? (
-                <ActivityIndicator color={colors.primary} />
-              ) : (
-                <Icon name="chevron-right" size={20} color={colors.outline} />
-              )
-            }
-          />
-          <View style={styles.divider} />
-          <SettingsRow
-            icon="download"
-            label={t('profile.import')}
-            hint={t('profile.importHint')}
-            onPress={onImport}
-            trailing={
-              busy === 'import' ? (
-                <ActivityIndicator color={colors.primary} />
-              ) : (
-                <Icon name="chevron-right" size={20} color={colors.outline} />
-              )
-            }
-          />
-          <View style={styles.divider} />
-          <SettingsRow
-            icon="restaurant"
-            label={t('recipe.importFromFile')}
-            hint={t('recipe.importFromFileHint')}
-            onPress={onImportRecipe}
-            trailing={
-              <Icon name="chevron-right" size={20} color={colors.outline} />
-            }
-          />
-          <View style={styles.divider} />
-          <SettingsRow
-            icon="qr-code-scanner"
-            label={t('profile.scanQr')}
-            hint={t('profile.scanQrHint')}
-            onPress={() => setScannerVisible(true)}
             trailing={
               <Icon name="chevron-right" size={20} color={colors.outline} />
             }
@@ -350,11 +244,6 @@ export default function ProfileScreen() {
           />
         </View>
       </ScrollView>
-      <QrScannerModal
-        visible={scannerVisible}
-        onClose={() => setScannerVisible(false)}
-        onScanned={onQrScanned}
-      />
     </View>
   );
 }

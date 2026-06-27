@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 import type { Locale } from '../types';
 
 interface SettingsState {
@@ -9,6 +9,15 @@ interface SettingsState {
   setLocale: (locale: Locale) => void;
   toggleLocale: () => void;
 }
+
+const noopStorage: StateStorage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+};
+
+const safeStorage: StateStorage =
+  typeof window === 'undefined' ? noopStorage : AsyncStorage;
 
 export const useSettings = create<SettingsState>()(
   persist(
@@ -21,10 +30,10 @@ export const useSettings = create<SettingsState>()(
     }),
     {
       name: 'vitality-prep:settings',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => safeStorage),
       partialize: (state) => ({ locale: state.locale }),
       onRehydrateStorage: () => (state) => {
-        state?.setLocale(state.locale);
+        if (state) state.setLocale(state.locale);
         useSettings.setState({ hydrated: true });
       },
     },

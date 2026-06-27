@@ -5,6 +5,8 @@ type MIName = ComponentProps<typeof MaterialIcons>['name'];
 
 export type IconName =
   | 'arrow-back'
+  | 'arrow-left'
+  | 'arrow-right'
   | 'fire'
   | 'schedule'
   | 'check'
@@ -34,11 +36,13 @@ export type IconName =
   | 'chevron-down'
   | 'edit'
   | 'open-in-new'
-  | 'qr-code'
-  | 'qr-code-scanner';
+  | 'fingerprint'
+  | 'logout';
 
 const map: Record<IconName, MIName> = {
   'arrow-back': 'arrow-back-ios',
+  'arrow-left': 'arrow-back',
+  'arrow-right': 'arrow-forward',
   fire: 'local-fire-department',
   schedule: 'schedule',
   check: 'check',
@@ -68,8 +72,8 @@ const map: Record<IconName, MIName> = {
   'chevron-down': 'expand-more',
   edit: 'edit',
   'open-in-new': 'open-in-new',
-  'qr-code': 'qr-code-2',
-  'qr-code-scanner': 'qr-code-scanner',
+  fingerprint: 'fingerprint',
+  logout: 'logout',
 };
 
 interface IconProps {

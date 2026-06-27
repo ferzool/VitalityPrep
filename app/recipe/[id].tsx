@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
   Alert,
   Pressable,
@@ -14,14 +14,7 @@ import { AppHeader } from '../../src/components/AppHeader';
 import { Icon, type IconName } from '../../src/components/Icon';
 import { IngredientRow } from '../../src/components/IngredientRow';
 import { MacroBox } from '../../src/components/MacroBox';
-import { RecipeQrModal } from '../../src/components/RecipeQrModal';
 import { useTranslation } from '../../src/hooks/useTranslation';
-import {
-  copyRecipeAsJson,
-  shareRecipe,
-  ShareCancelled,
-  ShareUnavailable,
-} from '../../src/lib/recipeShare';
 import { useRecipes } from '../../src/store/recipes';
 import { useShopping } from '../../src/store/shopping';
 import { cardShadow, colors, radius, spacing } from '../../src/theme';
@@ -34,8 +27,6 @@ export default function RecipeDetailScreen() {
   const removeRecipe = useRecipes((s) => s.removeRecipe);
   const addRecipeAll = useShopping((s) => s.addRecipeAll);
   const { fonts, t, tr, isRTL } = useTranslation();
-  const [copiedJson, setCopiedJson] = useState(false);
-  const [qrVisible, setQrVisible] = useState(false);
 
   const macroTotals = useMemo(() => {
     if (!recipe) return { protein: 0, carbs: 0, fat: 0, max: 1 };
@@ -79,33 +70,6 @@ export default function RecipeDetailScreen() {
 
   const onEdit = () => {
     router.push(`/recipe/new?edit=${recipe.id}`);
-  };
-
-  const onShareAsFile = async () => {
-    try {
-      await shareRecipe(recipe);
-    } catch (err) {
-      if (err instanceof ShareCancelled) return;
-      if (err instanceof ShareUnavailable) {
-        Alert.alert(t('recipe.share'), t('profile.sharingUnavailable'));
-      } else {
-        Alert.alert(t('recipe.share'), t('recipe.shareError'));
-      }
-    }
-  };
-
-  const onShare = () => {
-    Alert.alert(t('recipe.shareMethodTitle'), undefined, [
-      { text: t('recipe.shareAsQr'), onPress: () => setQrVisible(true) },
-      { text: t('recipe.shareAsFile'), onPress: onShareAsFile },
-      { text: t('common.cancel'), style: 'cancel' },
-    ]);
-  };
-
-  const onCopyJson = async () => {
-    await copyRecipeAsJson(recipe);
-    setCopiedJson(true);
-    setTimeout(() => setCopiedJson(false), 1800);
   };
 
   return (
@@ -188,12 +152,6 @@ export default function RecipeDetailScreen() {
           ]}
         >
           <ActionButton icon="edit" label={t('recipe.edit')} onPress={onEdit} />
-          <ActionButton icon="share" label={t('recipe.share')} onPress={onShare} />
-          <ActionButton
-            icon={copiedJson ? 'check' : 'content-copy'}
-            label={copiedJson ? t('recipe.copied') : t('recipe.copyJson')}
-            onPress={onCopyJson}
-          />
           <ActionButton
             icon="delete"
             label={t('common.delete')}
@@ -299,11 +257,6 @@ export default function RecipeDetailScreen() {
           </View>
         </View>
       </ScrollView>
-      <RecipeQrModal
-        recipe={recipe}
-        visible={qrVisible}
-        onClose={() => setQrVisible(false)}
-      />
     </View>
   );
 }
@@ -457,8 +410,9 @@ const styles = StyleSheet.create({
   actionsRow: {
     paddingHorizontal: spacing.marginMobile,
     marginTop: spacing.stackLg,
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'flex-start',
+    gap: spacing.stackLg,
   },
   actionBtn: {
     flex: 1,

@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { doc, setDoc } from 'firebase/firestore';
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { db } from '../lib/firebase';
 import type { Day, MealSlot, PlannerWeek } from '../types';
 
 interface PlannerState {
@@ -13,55 +13,53 @@ interface PlannerState {
   getRecipeIds: () => string[];
 }
 
-export const usePlanner = create<PlannerState>()(
-  persist(
-    (set, get) => ({
-      week: {},
-      hydrated: false,
-      setMeal: (day, slot, recipeId) =>
-        set((state) => {
-          const dayPlan = { ...(state.week[day] ?? {}) };
-          dayPlan[slot] = recipeId;
-          return { week: { ...state.week, [day]: dayPlan } };
-        }),
-      removeMeal: (day, slot) =>
-        set((state) => {
-          const dayPlan = { ...(state.week[day] ?? {}) };
-          delete dayPlan[slot];
-          const nextWeek = { ...state.week };
-          if (Object.keys(dayPlan).length === 0) {
-            delete nextWeek[day];
-          } else {
-            nextWeek[day] = dayPlan;
-          }
-          return { week: nextWeek };
-        }),
-      clearDay: (day) =>
-        set((state) => {
-          const nextWeek = { ...state.week };
-          delete nextWeek[day];
-          return { week: nextWeek };
-        }),
-      clearWeek: () => set({ week: {} }),
-      getRecipeIds: () => {
-        const ids: string[] = [];
-        const week = get().week;
-        Object.values(week).forEach((dayPlan) => {
-          if (!dayPlan) return;
-          Object.values(dayPlan).forEach((id) => {
-            if (id) ids.push(id);
-          });
-        });
-        return ids;
-      },
-    }),
-    {
-      name: 'vitality-prep:planner',
-      storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ week: state.week }),
-      onRehydrateStorage: () => () => {
-        usePlanner.setState({ hydrated: true });
-      },
-    },
-  ),
-);
+async function persistWeek(week: PlannerWeek): Promise<void> {
+  await setDoc(doc(db, 'planner', 'week'), { week });
+}
+
+export const usePlanner = create<PlannerState>()((set, get) => ({
+  week: {},
+  hydrated: false,
+  setMeal: (day, slot, recipeId) => {
+    const week = get().week;
+    const dayPlan = { ...(week[day] ?? {}) };
+    dayPlan[slot] = recipeId;
+    const next = { ...week, [day]: dayPlan };
+    void persistWeek(next);
+  },
+  removeMeal: (day, slot) => {
+    const week = get().week;
+    const dayPlan = { ...(week[day] ?? {}) };
+    delete dayPlan[slot];
+    const next = { ...week };
+    if (Object.keys(dayPlan).length === 0) {
+      delete next[day];
+    } else {
+      next[day] = dayPlan;
+    }
+    void persistWeek(next);
+  },
+  clearDay: (day) => {
+    const week = get().week;
+    const next = { ...week };
+    delete next[day];
+    void persistWeek(next);
+  },
+  clearWeek: () => {
+    void persistWeek({});
+  },
+  getRecipeIds: () => {
+    const ids: string[] = [];
+    Object.values(get().week).forEach((dayPlan) => {
+      if (!dayPlan) return;
+      Object.values(dayPlan).forEach((id) => {
+        if (id) ids.push(id);
+      });
+    });
+    return ids;
+  },
+}));
+
+export function writePlannerWeek(week: PlannerWeek): void {
+  usePlanner.setState({ week, hydrated: true });
+}

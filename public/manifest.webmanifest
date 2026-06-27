@@ -1,0 +1,12 @@
+{
+  "name": "Vitality Prep",
+  "short_name": "VitalityPrep",
+  "description": "Meal prep recipes, planner & shopping list for two.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f9f7f3",
+  "theme_color": "#4d6054",
+  "lang": "de",
+  "icons": []
+}

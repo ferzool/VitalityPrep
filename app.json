@@ -7,68 +7,28 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "vitalityprep",
-    "ios": {
-      "supportsTablet": false,
-      "bundleIdentifier": "com.example.vitalityprep",
-      "infoPlist": {
-        "CFBundleDocumentTypes": [
-          {
-            "CFBundleTypeName": "Vitality Prep Recipe",
-            "CFBundleTypeRole": "Editor",
-            "LSHandlerRank": "Owner",
-            "LSItemContentTypes": [
-              "com.example.vitalityprep.myrecipe"
-            ]
-          }
-        ],
-        "UTExportedTypeDeclarations": [
-          {
-            "UTTypeIdentifier": "com.example.vitalityprep.myrecipe",
-            "UTTypeDescription": "Vitality Prep Recipe",
-            "UTTypeConformsTo": [
-              "public.zip-archive",
-              "public.data"
-            ],
-            "UTTypeTagSpecification": {
-              "public.filename-extension": [
-                "myrecipe"
-              ],
-              "public.mime-type": [
-                "application/x-myrecipe"
-              ]
-            }
-          }
-        ],
-        "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "Vitality Prep benötigt die Kamera, um QR-Codes von Rezepten zu scannen."
-      }
-    },
-    "android": {
-      "package": "com.example.vitalityprep",
-      "permissions": ["android.permission.CAMERA"]
-    },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "static",
+      "name": "Vitality Prep",
+      "shortName": "VitalityPrep",
+      "description": "Meal prep recipes, planner & shopping list for two.",
+      "themeColor": "#4d6054",
+      "backgroundColor": "#f9f7f3",
+      "display": "standalone",
+      "lang": "de",
+      "orientation": "portrait"
     },
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-localization",
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Vitality Prep benötigt die Kamera, um QR-Codes von Rezepten zu scannen."
-        }
-      ]
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "4e9215ee-b8ea-49e7-8fed-3909cee0d59c"
-      }
+      "router": {}
     }
   }
 }
