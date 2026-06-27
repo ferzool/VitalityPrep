@@ -1,6 +1,12 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
+const APP_CSS = `
+html, body, #root { background-color: #f9f7f3; }
+body { min-height: 100dvh; margin: 0; }
+* { -webkit-tap-highlight-color: transparent; }
+`;
+
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="de">
@@ -16,9 +22,16 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Vitality Prep" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
         <title>Vitality Prep</title>
         <ScrollViewStyleReset />
+        {/* eslint-disable-next-line react/no-danger */}
+        <style dangerouslySetInnerHTML={{ __html: APP_CSS }} />
       </head>
       <body>{children}</body>
     </html>

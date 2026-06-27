@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -53,7 +54,11 @@ export default function LoginScreen() {
     <View style={[styles.flex, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.center}>
         <View style={styles.brand}>
-          <Icon name="restaurant" size={64} color={colors.primary} />
+          <Image
+            source={require('../public/apple-touch-icon.png')}
+            style={styles.appIcon}
+            contentFit="contain"
+          />
           <Text
             style={[
               fonts.displayLgMobile,
@@ -135,6 +140,11 @@ const styles = StyleSheet.create({
   brand: {
     alignItems: 'center',
     marginBottom: spacing.stackLg,
+  },
+  appIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 22,
   },
   signInButton: {
     flexDirection: 'row',

@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeInsets } from '../hooks/useSafeInsets';
 import { useTranslation } from '../hooks/useTranslation';
 import { colors, spacing } from '../theme';
 import { Icon } from './Icon';
@@ -17,13 +17,13 @@ const AVATAR_URL =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuA8HvPnr16NGUzCvYN2XFd1BqVaPy7S-g8aH_LU3E8Dt1_WH-ZE-fV_o_1p80EnDEqzy9navkyy-SAPyi2Bid2HrPsHlD1Run_KjalVNaM1-QNXmMmiO9pWT8QwuVXfqVOdO1L6hYX3JgSKqQXmHVc-168ae7EyD-8NT_5I4XMkHscyRLi4KIQyQGgjJS1lrEw_w5IdF_8fAi3MWSVNvXrkxlAk4paBtqtsCeSUxgHWFp_nRxR--JA1ExabQ-y7D3HHMkhiL7SzU0Yu';
 
 export function AppHeader({ title, showBack, onBack }: AppHeaderProps) {
-  const insets = useSafeAreaInsets();
+  const insets = useSafeInsets();
   const router = useRouter();
   const { fonts, t, isRTL } = useTranslation();
   const headlineColor = colors.primary;
 
   return (
-    <View style={[styles.wrapper, { paddingTop: insets.top }]}>
+    <View style={[styles.wrapper, { paddingTop: Math.max(insets.top, 12) + 4 }]}>
       <View
         style={[
           styles.row,

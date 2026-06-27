@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '../../src/components/Icon';
+import { useSafeInsets } from '../../src/hooks/useSafeInsets';
 import { useTranslation } from '../../src/hooks/useTranslation';
 import { colors, spacing } from '../../src/theme';
 
@@ -19,7 +19,9 @@ function TabIcon({
 
 export default function TabsLayout() {
   const { t, fonts } = useTranslation();
-  const insets = useSafeAreaInsets();
+  const insets = useSafeInsets();
+  const bottomInset = Math.max(insets.bottom, 8);
+  const barHeight = 56 + bottomInset;
 
   return (
     <Tabs
@@ -31,12 +33,13 @@ export default function TabsLayout() {
         tabBarStyle: [
           styles.bar,
           {
-            paddingBottom: Math.max(insets.bottom, 12),
-            height: 60 + Math.max(insets.bottom, 12),
+            paddingBottom: bottomInset,
+            height: barHeight,
           },
         ],
-        tabBarLabelStyle: [fonts.labelCaps, { marginBottom: 4 }],
-        tabBarItemStyle: { paddingTop: 6 },
+        tabBarLabelStyle: [fonts.labelCaps, { marginBottom: 2 }],
+        tabBarIconStyle: { marginTop: 2 },
+        tabBarItemStyle: { paddingTop: 8, paddingBottom: 2 },
         sceneStyle: { backgroundColor: colors.background },
       }}
     >
