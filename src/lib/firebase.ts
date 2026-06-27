@@ -6,7 +6,7 @@ import {
   inMemoryPersistence,
   indexedDBLocalPersistence,
   browserLocalPersistence,
-  setPersistence,
+  browserSessionPersistence,
 } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
@@ -27,20 +27,22 @@ const app: FirebaseApp =
 let auth: Auth;
 try {
   if (Platform.OS === 'web') {
-    auth = getAuth(app);
-    // iOS Safari can hang on the default persistence chain; force a fallback
-    // chain that fails fast to in-memory if storage is unavailable.
-    if (typeof window !== 'undefined') {
-      void setPersistence(auth, indexedDBLocalPersistence).catch(() =>
-        setPersistence(auth, browserLocalPersistence).catch(() =>
-          setPersistence(auth, inMemoryPersistence).catch(() => {}),
-        ),
-      );
-    }
+    // Explicit persistence chain bypasses Firebase's environment auto-detect
+    // (which can mis-classify Metro's web bundle as React Native).
+    auth = initializeAuth(app, {
+      persistence: [
+        indexedDBLocalPersistence,
+        browserLocalPersistence,
+        browserSessionPersistence,
+        inMemoryPersistence,
+      ],
+    });
   } else {
     auth = initializeAuth(app, { persistence: inMemoryPersistence });
   }
 } catch {
+  // initializeAuth throws if it was already initialized for this app;
+  // fall back to the existing instance.
   auth = getAuth(app);
 }
 

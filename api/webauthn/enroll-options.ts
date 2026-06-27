@@ -56,6 +56,7 @@ export default async function handler(
     setChallengeCookie(res, challengeId);
     res.status(200).json(options);
   } catch (err) {
+    console.error('enroll-options error:', err);
     res.status(500).json({ error: (err as Error).message });
   }
 }

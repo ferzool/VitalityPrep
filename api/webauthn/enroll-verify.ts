@@ -82,6 +82,7 @@ export default async function handler(
       displayName: stored.displayName,
     });
   } catch (err) {
+    console.error('enroll-verify error:', err);
     res.status(500).json({ error: (err as Error).message });
   }
 }
