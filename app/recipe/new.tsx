@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -17,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CategoryDropdown } from '../../src/components/CategoryDropdown';
 import { Icon } from '../../src/components/Icon';
 import { useTranslation, type TranslationKey } from '../../src/hooks/useTranslation';
+import { uploadRecipeImage } from '../../src/lib/imageUpload';
 import { useRecipes } from '../../src/store/recipes';
 import { cardShadow, colors, radius, spacing } from '../../src/theme';
 import {
@@ -170,6 +172,7 @@ export default function AddRecipeScreen() {
   const addOrUpdateByName = useRecipes((s) => s.addOrUpdateByName);
   const updateRecipe = useRecipes((s) => s.updateRecipe);
   const removeRecipe = useRecipes((s) => s.removeRecipe);
+  const [saving, setSaving] = useState(false);
   const { edit: editParam } = useLocalSearchParams<{ edit?: string }>();
   const editId =
     typeof editParam === 'string' && editParam.length > 0 ? editParam : null;
@@ -330,7 +333,8 @@ export default function AddRecipeScreen() {
     Alert.alert(t('addRecipe.jsonImport'), t('addRecipe.jsonApplied'));
   };
 
-  const onSave = () => {
+  const onSave = async () => {
+    if (saving) return;
     const cleanIngredients: Ingredient[] = ingredients
       .filter((it) => it.name.trim() !== '' && it.amount.trim() !== '')
       .map((it) => ({
@@ -355,12 +359,27 @@ export default function AddRecipeScreen() {
         fa: s.textFa?.trim() || s.text.trim(),
       }));
 
-    const finalImage =
-      imageSource.kind === 'local'
-        ? imageSource.uri
-        : imageMode === 'url' && imageUrlInput.trim()
-          ? imageUrlInput.trim()
-          : DEFAULT_IMAGE;
+    setSaving(true);
+    let finalImage: string;
+    try {
+      if (imageSource.kind === 'local') {
+        const localUri = imageSource.uri;
+        // Already a public URL (e.g. previously-saved Firebase Storage link).
+        if (/^https?:\/\//.test(localUri)) {
+          finalImage = localUri;
+        } else {
+          finalImage = await uploadRecipeImage(localUri);
+        }
+      } else if (imageMode === 'url' && imageUrlInput.trim()) {
+        finalImage = imageUrlInput.trim();
+      } else {
+        finalImage = DEFAULT_IMAGE;
+      }
+    } catch (err) {
+      setSaving(false);
+      Alert.alert(t('addRecipe.title'), (err as Error).message);
+      return;
+    }
 
     const trimmedName = name.trim();
     const trimmedDescDe = descriptionDe.trim();
@@ -456,12 +475,20 @@ export default function AddRecipeScreen() {
         </Text>
         <Pressable
           onPress={onSave}
+          disabled={saving}
           hitSlop={10}
-          style={({ pressed }) => [styles.saveBtn, { opacity: pressed ? 0.85 : 1 }]}
+          style={({ pressed }) => [
+            styles.saveBtn,
+            { opacity: saving ? 0.6 : pressed ? 0.85 : 1 },
+          ]}
         >
-          <Text style={[fonts.labelCaps, { color: colors.onPrimary }]}>
-            {t('addRecipe.save')}
-          </Text>
+          {saving ? (
+            <ActivityIndicator color={colors.onPrimary} />
+          ) : (
+            <Text style={[fonts.labelCaps, { color: colors.onPrimary }]}>
+              {t('addRecipe.save')}
+            </Text>
+          )}
         </Pressable>
       </View>
 

@@ -1,0 +1,13 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Recipe images: any authenticated user (Iman or Niloo) can read and
+    // write. Cap file size to 5 MB and enforce a JPEG/PNG/WebP/GIF mime type.
+    match /recipes/{imageId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
