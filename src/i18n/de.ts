@@ -40,6 +40,7 @@ export const de = {
   'recipe.shareTitle': 'Rezept teilen',
   'recipe.copyJson': 'JSON kopieren',
   'recipe.copiedJson': 'JSON in Zwischenablage',
+  'recipe.copied': 'Kopiert!',
   'recipe.shareError': 'Teilen fehlgeschlagen.',
   'recipe.importedSuccess': 'Rezept importiert',
   'recipe.importedUpdated': 'Vorhandenes Rezept aktualisiert',
@@ -47,6 +48,23 @@ export const de = {
   'recipe.importTitle': 'Rezept importieren',
   'recipe.importFromFile': 'Aus Datei importieren',
   'recipe.importFromFileHint': 'Wähle eine .myrecipe-Datei aus den Dateien.',
+  'recipe.shareMethodTitle': 'Wie möchtest du teilen?',
+  'recipe.shareAsQr': 'Als QR-Code anzeigen',
+  'recipe.shareAsFile': 'Als Datei teilen',
+
+  'qr.shareTitle': 'Rezept als QR-Code',
+  'qr.shareHint': 'Lasse den Empfänger den Code in der App scannen (Profil → „QR-Code scannen“).',
+  'qr.scanTitle': 'QR-Code scannen',
+  'qr.scanHint': 'Scanne einen Rezept-QR-Code, um es direkt zu importieren.',
+  'qr.aimHint': 'Richte die Kamera auf den QR-Code',
+  'qr.invalid': 'Kein gültiger Rezept-Code.',
+  'qr.scanError': 'Konnte nicht gelesen werden. Erneut versuchen.',
+  'qr.permissionTitle': 'Kamerazugriff benötigt',
+  'qr.permissionHint': 'Erlaube den Kamerazugriff in den Einstellungen, um QR-Codes zu scannen.',
+  'qr.allowCamera': 'Kamera erlauben',
+  'qr.openSettings': 'Einstellungen öffnen',
+  'qr.tooLarge': 'Rezept zu groß für QR-Code',
+  'qr.tooLargeHint': 'Teile dieses Rezept stattdessen als Datei.',
 
   'shopping.title': 'Einkaufsliste',
   'shopping.empty':
@@ -118,6 +136,8 @@ export const de = {
   'profile.aboutText':
     'Eine minimalistische App zum Verwalten deiner Meal-Prep-Rezepte und Einkaufsliste.',
   'profile.version': 'Version',
+  'profile.scanQr': 'QR-Code scannen',
+  'profile.scanQrHint': 'Importiere ein Rezept durch Scannen eines QR-Codes.',
 
   'addRecipe.title': 'Neues Rezept',
   'addRecipe.editTitle': 'Rezept bearbeiten',

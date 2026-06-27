@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader } from '../../src/components/AppHeader';
 import { Icon, type IconName } from '../../src/components/Icon';
 import { LanguageToggle } from '../../src/components/LanguageToggle';
+import { QrScannerModal } from '../../src/components/QrScannerModal';
 import { useTranslation } from '../../src/hooks/useTranslation';
 import {
   BackupCancelled,
@@ -29,6 +30,7 @@ import { usePlanner } from '../../src/store/planner';
 import { useRecipes } from '../../src/store/recipes';
 import { useShopping } from '../../src/store/shopping';
 import { cardShadow, colors, radius, spacing } from '../../src/theme';
+import type { Recipe } from '../../src/types';
 
 interface RowProps {
   icon: IconName;
@@ -117,6 +119,7 @@ export default function ProfileScreen() {
   const clearPlanner = usePlanner((s) => s.clearWeek);
   const version = Constants.expoConfig?.version ?? '1.0.0';
   const [busy, setBusy] = useState<'export' | 'import' | null>(null);
+  const [scannerVisible, setScannerVisible] = useState(false);
 
   const onResetRecipes = () => {
     Alert.alert(t('profile.title'), t('profile.resetRecipesConfirm'), [
@@ -204,6 +207,18 @@ export default function ProfileScreen() {
     }
   };
 
+  const onQrScanned = (recipe: Recipe) => {
+    setScannerVisible(false);
+    const { id, isUpdate } = addOrUpdateByName(recipe);
+    setTimeout(() => {
+      Alert.alert(
+        isUpdate ? t('recipe.importedUpdated') : t('recipe.importedSuccess'),
+        recipe.name.de || recipe.name.fa,
+      );
+      router.push(`/recipe/${id}`);
+    }, 250);
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader />
@@ -285,6 +300,16 @@ export default function ProfileScreen() {
               <Icon name="chevron-right" size={20} color={colors.outline} />
             }
           />
+          <View style={styles.divider} />
+          <SettingsRow
+            icon="qr-code-scanner"
+            label={t('profile.scanQr')}
+            hint={t('profile.scanQrHint')}
+            onPress={() => setScannerVisible(true)}
+            trailing={
+              <Icon name="chevron-right" size={20} color={colors.outline} />
+            }
+          />
         </View>
 
         <SectionTitle>{t('profile.data')}</SectionTitle>
@@ -325,6 +350,11 @@ export default function ProfileScreen() {
           />
         </View>
       </ScrollView>
+      <QrScannerModal
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onScanned={onQrScanned}
+      />
     </View>
   );
 }

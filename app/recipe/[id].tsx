@@ -14,6 +14,7 @@ import { AppHeader } from '../../src/components/AppHeader';
 import { Icon, type IconName } from '../../src/components/Icon';
 import { IngredientRow } from '../../src/components/IngredientRow';
 import { MacroBox } from '../../src/components/MacroBox';
+import { RecipeQrModal } from '../../src/components/RecipeQrModal';
 import { useTranslation } from '../../src/hooks/useTranslation';
 import {
   copyRecipeAsJson,
@@ -34,6 +35,7 @@ export default function RecipeDetailScreen() {
   const addRecipeAll = useShopping((s) => s.addRecipeAll);
   const { fonts, t, tr, isRTL } = useTranslation();
   const [copiedJson, setCopiedJson] = useState(false);
+  const [qrVisible, setQrVisible] = useState(false);
 
   const macroTotals = useMemo(() => {
     if (!recipe) return { protein: 0, carbs: 0, fat: 0, max: 1 };
@@ -79,7 +81,7 @@ export default function RecipeDetailScreen() {
     router.push(`/recipe/new?edit=${recipe.id}`);
   };
 
-  const onShare = async () => {
+  const onShareAsFile = async () => {
     try {
       await shareRecipe(recipe);
     } catch (err) {
@@ -90,6 +92,14 @@ export default function RecipeDetailScreen() {
         Alert.alert(t('recipe.share'), t('recipe.shareError'));
       }
     }
+  };
+
+  const onShare = () => {
+    Alert.alert(t('recipe.shareMethodTitle'), undefined, [
+      { text: t('recipe.shareAsQr'), onPress: () => setQrVisible(true) },
+      { text: t('recipe.shareAsFile'), onPress: onShareAsFile },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
   };
 
   const onCopyJson = async () => {
@@ -181,12 +191,12 @@ export default function RecipeDetailScreen() {
           <ActionButton icon="share" label={t('recipe.share')} onPress={onShare} />
           <ActionButton
             icon={copiedJson ? 'check' : 'content-copy'}
-            label={copiedJson ? t('recipe.copiedJson') : t('recipe.copyJson')}
+            label={copiedJson ? t('recipe.copied') : t('recipe.copyJson')}
             onPress={onCopyJson}
           />
           <ActionButton
             icon="delete"
-            label={t('recipe.delete')}
+            label={t('common.delete')}
             onPress={onDelete}
             destructive
           />
@@ -289,6 +299,11 @@ export default function RecipeDetailScreen() {
           </View>
         </View>
       </ScrollView>
+      <RecipeQrModal
+        recipe={recipe}
+        visible={qrVisible}
+        onClose={() => setQrVisible(false)}
+      />
     </View>
   );
 }
@@ -302,24 +317,31 @@ interface ActionButtonProps {
 
 function ActionButton({ icon, label, onPress, destructive }: ActionButtonProps) {
   const { fonts } = useTranslation();
-  const color = destructive ? colors.error : colors.primary;
-  const bg = destructive ? colors.errorContainer : colors.primaryContainer;
+  const tint = destructive ? colors.error : colors.primary;
+  const circleBg = destructive ? colors.errorContainer : colors.secondaryContainer;
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [
         styles.actionBtn,
-        { backgroundColor: bg, opacity: pressed ? 0.85 : 1 },
+        { opacity: pressed ? 0.6 : 1 },
       ]}
       accessibilityRole="button"
       accessibilityLabel={label}
+      hitSlop={6}
     >
-      <Icon name={icon} size={20} color={color} />
+      <View style={[styles.actionIconCircle, { backgroundColor: circleBg }]}>
+        <Icon name={icon} size={24} color={tint} />
+      </View>
       <Text
         numberOfLines={1}
         adjustsFontSizeToFit
-        minimumFontScale={0.7}
-        style={[fonts.labelCaps, { color, marginTop: 4 }]}
+        minimumFontScale={0.75}
+        style={[
+          fonts.bodySm,
+          styles.actionLabel,
+          { color: destructive ? colors.error : colors.onSurfaceVariant },
+        ]}
       >
         {label}
       </Text>
@@ -345,21 +367,22 @@ const styles = StyleSheet.create({
     left: spacing.marginMobile,
     right: spacing.marginMobile,
     bottom: spacing.marginMobile,
-    gap: spacing.stackMd,
+    gap: spacing.gutter,
   },
   heroTitle: {
     color: '#ffffff',
   },
   heroPills: {
-    gap: spacing.stackMd,
+    gap: spacing.gutter,
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   kcalPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     backgroundColor: colors.primary,
     borderRadius: radius.pill,
   },
@@ -370,8 +393,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     backgroundColor: 'rgba(255,255,255,0.22)',
     borderRadius: radius.pill,
     borderWidth: 1,
@@ -379,7 +402,7 @@ const styles = StyleSheet.create({
   },
   macrosWrap: {
     paddingHorizontal: spacing.marginMobile,
-    marginTop: -28,
+    marginTop: spacing.stackLg,
     zIndex: 2,
   },
   macrosRow: {
@@ -434,15 +457,25 @@ const styles = StyleSheet.create({
   actionsRow: {
     paddingHorizontal: spacing.marginMobile,
     marginTop: spacing.stackLg,
-    gap: spacing.stackSm,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   actionBtn: {
     flex: 1,
-    paddingVertical: spacing.stackMd,
-    paddingHorizontal: spacing.stackSm,
-    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 6,
+    paddingVertical: spacing.stackSm,
+  },
+  actionIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 70,
+  },
+  actionLabel: {
+    textAlign: 'center',
+    paddingHorizontal: 2,
   },
 });

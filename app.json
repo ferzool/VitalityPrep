@@ -16,24 +16,36 @@
             "CFBundleTypeName": "Vitality Prep Recipe",
             "CFBundleTypeRole": "Editor",
             "LSHandlerRank": "Owner",
-            "LSItemContentTypes": ["com.example.vitalityprep.myrecipe"]
+            "LSItemContentTypes": [
+              "com.example.vitalityprep.myrecipe"
+            ]
           }
         ],
         "UTExportedTypeDeclarations": [
           {
             "UTTypeIdentifier": "com.example.vitalityprep.myrecipe",
             "UTTypeDescription": "Vitality Prep Recipe",
-            "UTTypeConformsTo": ["public.zip-archive", "public.data"],
+            "UTTypeConformsTo": [
+              "public.zip-archive",
+              "public.data"
+            ],
             "UTTypeTagSpecification": {
-              "public.filename-extension": ["myrecipe"],
-              "public.mime-type": ["application/x-myrecipe"]
+              "public.filename-extension": [
+                "myrecipe"
+              ],
+              "public.mime-type": [
+                "application/x-myrecipe"
+              ]
             }
           }
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Vitality Prep benötigt die Kamera, um QR-Codes von Rezepten zu scannen."
       }
     },
     "android": {
-      "package": "com.example.vitalityprep"
+      "package": "com.example.vitalityprep",
+      "permissions": ["android.permission.CAMERA"]
     },
     "web": {
       "bundler": "metro"
@@ -41,10 +53,22 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Vitality Prep benötigt die Kamera, um QR-Codes von Rezepten zu scannen."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4e9215ee-b8ea-49e7-8fed-3909cee0d59c"
+      }
     }
   }
 }

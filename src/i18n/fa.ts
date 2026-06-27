@@ -42,6 +42,7 @@ export const fa: Record<TranslationKey, string> = {
   'recipe.shareTitle': 'اشتراک دستور',
   'recipe.copyJson': 'کپی JSON',
   'recipe.copiedJson': 'JSON در حافظه کپی شد',
+  'recipe.copied': 'کپی شد!',
   'recipe.shareError': 'اشتراک ناموفق بود.',
   'recipe.importedSuccess': 'دستور وارد شد',
   'recipe.importedUpdated': 'دستور موجود به‌روز شد',
@@ -49,6 +50,23 @@ export const fa: Record<TranslationKey, string> = {
   'recipe.importTitle': 'وارد کردن دستور',
   'recipe.importFromFile': 'وارد کردن از فایل',
   'recipe.importFromFileHint': 'یک فایل .myrecipe را از فایل‌ها انتخاب کنید.',
+  'recipe.shareMethodTitle': 'چگونه به اشتراک بگذاریم؟',
+  'recipe.shareAsQr': 'نمایش به‌صورت QR',
+  'recipe.shareAsFile': 'به صورت فایل',
+
+  'qr.shareTitle': 'دستور به صورت QR',
+  'qr.shareHint': 'از گیرنده بخواه کد را در اپ اسکن کند (پروفایل ← «اسکن QR»).',
+  'qr.scanTitle': 'اسکن QR',
+  'qr.scanHint': 'با اسکن QR یک دستور را وارد کن.',
+  'qr.aimHint': 'دوربین را روی QR بگیر',
+  'qr.invalid': 'کد دستور معتبر نیست.',
+  'qr.scanError': 'خواندن ناموفق بود. دوباره تلاش کن.',
+  'qr.permissionTitle': 'دسترسی دوربین لازم است',
+  'qr.permissionHint': 'برای اسکن QR، در تنظیمات اجازه دوربین را بده.',
+  'qr.allowCamera': 'اجازه دوربین',
+  'qr.openSettings': 'باز کردن تنظیمات',
+  'qr.tooLarge': 'دستور برای QR بزرگ است',
+  'qr.tooLargeHint': 'این دستور را به صورت فایل به اشتراک بگذار.',
 
   'shopping.title': 'لیست خرید',
   'shopping.empty':
@@ -120,6 +138,8 @@ export const fa: Record<TranslationKey, string> = {
   'profile.aboutText':
     'یک اپ ساده برای مدیریت دستورهای آماده‌سازی غذا و لیست خرید.',
   'profile.version': 'نسخه',
+  'profile.scanQr': 'اسکن QR',
+  'profile.scanQrHint': 'با اسکن QR یک دستور وارد کنید.',
 
   'addRecipe.title': 'دستور جدید',
   'addRecipe.editTitle': 'ویرایش دستور',

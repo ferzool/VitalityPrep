@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from '../hooks/useTranslation';
@@ -17,6 +18,7 @@ const AVATAR_URL =
 
 export function AppHeader({ title, showBack, onBack }: AppHeaderProps) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { fonts, t, isRTL } = useTranslation();
   const headlineColor = colors.primary;
 
@@ -61,14 +63,23 @@ export function AppHeader({ title, showBack, onBack }: AppHeaderProps) {
           ]}
         >
           <LanguageToggle />
-          <View style={styles.avatar}>
+          <Pressable
+            onPress={() => router.push('/profile')}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.title')}
+            style={({ pressed }) => [
+              styles.avatar,
+              { opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
             <Image
               source={AVATAR_URL}
               style={StyleSheet.absoluteFill}
               contentFit="cover"
               transition={150}
             />
-          </View>
+          </Pressable>
         </View>
       </View>
     </View>

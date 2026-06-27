@@ -33,7 +33,9 @@ export type IconName =
   | 'auto-awesome'
   | 'chevron-down'
   | 'edit'
-  | 'open-in-new';
+  | 'open-in-new'
+  | 'qr-code'
+  | 'qr-code-scanner';
 
 const map: Record<IconName, MIName> = {
   'arrow-back': 'arrow-back-ios',
@@ -66,6 +68,8 @@ const map: Record<IconName, MIName> = {
   'chevron-down': 'expand-more',
   edit: 'edit',
   'open-in-new': 'open-in-new',
+  'qr-code': 'qr-code-2',
+  'qr-code-scanner': 'qr-code-scanner',
 };
 
 interface IconProps {
