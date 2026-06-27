@@ -2,14 +2,26 @@ export const AI_PROMPT_TEMPLATE = `You are a nutrition expert creating data for 
 meal-prep iOS app called "Vitality Prep". When I give you a food name, return
 EXACTLY one strictly-valid JSON object — no Markdown, no commentary, no fences.
 
+The user is following a healthy, calorie-conscious diet. EVERY recipe you
+produce MUST be:
+- Diet-friendly and nutritionally balanced (lean protein, complex carbs,
+  fibre, healthy fats; minimal saturated fat).
+- Built around whole, unprocessed ingredients (vegetables, legumes, fish,
+  poultry, eggs, tofu, whole grains, fruits, nuts/seeds in moderation).
+- Low in added sugar, refined flour, deep-fried fat, heavy cream, and
+  processed meat (sausage, bacon). Prefer olive oil, yogurt, herbs, spices.
+- A reasonable single-serving energy load (typically 300–550 kcal/serving
+  for mains, 150–300 for breakfast, 100–250 for snacks; sauces can be lower).
+
 Schema:
 {
   "name": { "de": "<German name>", "fa": "<Persian name>" },
   "description": { "de": "<one short German sentence>", "fa": "<one short Persian sentence>" },
   "category": "<one of: breakfast | main | snack | sauce | smoothie>",
-  "calories": <integer kcal per serving>,
-  "prepTimeMinutes": <integer total prep minutes>,
-  "servings": <integer servings the recipe produces>,
+  "calories":         <integer kcal PER SERVING>,
+  "caloriesPer100g":  <integer kcal per 100 g of finished dish>,
+  "prepTimeMinutes":  <integer total prep minutes>,
+  "servings":         <integer servings the recipe produces>,
   "macros": {
     "protein": <integer grams per serving>,
     "carbs":   <integer grams per serving>,
@@ -17,9 +29,10 @@ Schema:
   },
   "ingredients": [
     {
-      "name":   { "de": "<DE ingredient>", "fa": "<FA ingredient>" },
-      "amount": <number>,
-      "unit":   "<one of: g | kg | ml | l | piece | tsp | tbsp | cup | pinch>"
+      "name":     { "de": "<DE ingredient>", "fa": "<FA ingredient>" },
+      "amount":   <number>,
+      "unit":     "<one of: g | kg | ml | l | piece | tsp | tbsp | cup | pinch>",
+      "calories": <integer kcal contributed by THIS ingredient at the listed amount>
     }
   ],
   "instructions": [
@@ -30,26 +43,35 @@ Schema:
 
 Rules:
 1. Output ONLY the JSON object. No \\\`\\\`\\\` fences, no leading "json", no trailing text.
-2. ALL numerical fields (calories, prepTimeMinutes, servings, macros.*, amount)
-   MUST be plain JSON numbers (no quotes, no units inside the value).
-3. Macros must approximately match calories using 4/4/9 kcal per gram for P/C/F.
-4. Provide 5–10 realistic ingredients with gram or volume amounts sized for the
-   given "servings".
-5. Provide 3–6 short, clear bilingual instruction steps (each step is a
+2. ALL numerical fields (calories, caloriesPer100g, prepTimeMinutes, servings,
+   macros.*, amount, ingredients[*].calories) MUST be plain JSON numbers
+   (no quotes, no units inside the value).
+3. Macros must approximately match per-serving calories using 4/4/9 kcal per
+   gram for P/C/F.
+4. The SUM of ingredients[*].calories must approximately equal
+   (calories * servings) — i.e. the ingredient kcal sum should account for
+   the whole dish, not a single serving.
+5. "caloriesPer100g" must reflect the energy density of the finished dish
+   (total kcal of all ingredients divided by total finished weight in grams,
+   times 100). Estimate finished weight from the ingredient amounts.
+6. Provide 5–10 realistic ingredients with gram or volume amounts sized for
+   the given "servings". Include the per-ingredient "calories" for every
+   ingredient (use 0 for water, salt, herbs).
+7. Provide 3–6 short, clear bilingual instruction steps (each step is a
    { "de": "...", "fa": "..." } object).
-6. ALL "name", "description", "ingredients[*].name" and "instructions[*]"
+8. ALL "name", "description", "ingredients[*].name" and "instructions[*]"
    fields MUST contain BOTH "de" and "fa" keys with real translations
    (do NOT mirror; translate properly into Persian).
-7. Do NOT include an "image", "imageUrl", "id", or "isCustom" field —
+9. Do NOT include an "image", "imageUrl", "id", or "isCustom" field —
    the app handles those.
-8. Use grams (g) and millilitres (ml) by default; only use kg, l, cup, tbsp,
-   tsp, piece, or pinch when natural.
-9. Categories:
-   - "breakfast" = morning meals (oatmeal, yogurt bowls, eggs, pancakes)
-   - "main"      = lunch / dinner mains (bowls, curries, grilled dishes, salads)
-   - "snack"     = bites, balls, bars, finger food
-   - "sauce"     = dressings, dips, salsas, condiments
-   - "smoothie"  = blended drinks
+10. Use grams (g) and millilitres (ml) by default; only use kg, l, cup, tbsp,
+    tsp, piece, or pinch when natural.
+11. Categories:
+    - "breakfast" = morning meals (oatmeal, yogurt bowls, eggs, pancakes)
+    - "main"      = lunch / dinner mains (bowls, curries, grilled dishes, salads)
+    - "snack"     = bites, balls, bars, finger food
+    - "sauce"     = dressings, dips, salsas, condiments
+    - "smoothie"  = blended drinks
 
 Food name: <PUT YOUR FOOD NAME HERE>
 `;

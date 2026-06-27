@@ -36,6 +36,7 @@ interface DraftIngredient {
   nameFa?: string;
   amount: string;
   unit: Unit;
+  calories?: string;
 }
 
 interface DraftStep {
@@ -78,6 +79,7 @@ interface ImportedDraft {
   descriptionFa?: string;
   category?: Category;
   calories?: string;
+  caloriesPer100g?: string;
   prepTime?: string;
   servings?: string;
   protein?: string;
@@ -117,6 +119,9 @@ function parseJsonImport(raw: string): ImportedDraft | null {
   }
 
   if (typeof obj.calories === 'number') draft.calories = String(obj.calories);
+  if (typeof (obj as { caloriesPer100g?: unknown }).caloriesPer100g === 'number') {
+    draft.caloriesPer100g = String((obj as { caloriesPer100g: number }).caloriesPer100g);
+  }
   const prep =
     (obj as { prepTimeMinutes?: unknown }).prepTimeMinutes ??
     (obj as { prepTime?: unknown }).prepTime;
@@ -143,6 +148,7 @@ function parseJsonImport(raw: string): ImportedDraft | null {
           nameFa: nm.fa && nm.fa !== nm.de ? nm.fa : undefined,
           amount: typeof r.amount === 'number' ? String(r.amount) : '',
           unit: (UNITS as string[]).includes(r.unit as string) ? (r.unit as Unit) : 'g',
+          calories: typeof r.calories === 'number' ? String(r.calories) : undefined,
         };
       })
       .filter((it): it is DraftIngredient => it !== null);
@@ -190,6 +196,7 @@ export default function AddRecipeScreen() {
   const [imageMode, setImageMode] = useState<'url' | 'file'>('url');
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [calories, setCalories] = useState('');
+  const [caloriesPer100g, setCaloriesPer100g] = useState('');
   const [prepTime, setPrepTime] = useState('');
   const [servings, setServings] = useState('2');
   const [protein, setProtein] = useState('');
@@ -219,6 +226,11 @@ export default function AddRecipeScreen() {
     );
     setCategory(recipeToEdit.category);
     setCalories(String(recipeToEdit.calories));
+    setCaloriesPer100g(
+      recipeToEdit.caloriesPer100g !== undefined
+        ? String(recipeToEdit.caloriesPer100g)
+        : '',
+    );
     setPrepTime(String(recipeToEdit.prepTimeMinutes));
     setServings(String(recipeToEdit.servings));
     setProtein(String(recipeToEdit.macros.protein));
@@ -232,6 +244,7 @@ export default function AddRecipeScreen() {
             nameFa: i.name.fa !== i.name.de ? i.name.fa : undefined,
             amount: String(i.amount),
             unit: i.unit,
+            calories: i.calories !== undefined ? String(i.calories) : undefined,
           }))
         : [{ id: uid(), name: '', amount: '', unit: 'g' }],
     );
@@ -313,23 +326,31 @@ export default function AddRecipeScreen() {
       return;
     }
     setJsonError(null);
-    if (draft.name !== undefined) setName(draft.name);
+    // In edit mode the user expects the JSON to fully replace every field
+    // (except the image). Wipe defaults first so stale data from the recipe
+    // does not bleed through when the JSON omits a field.
+    setName(draft.name ?? '');
     setNameFa(draft.nameFa ?? '');
     setDescriptionDe(draft.descriptionDe ?? '');
     setDescriptionFa(draft.descriptionFa ?? '');
-    if (draft.category) setCategory(draft.category);
-    if (draft.calories !== undefined) setCalories(draft.calories);
-    if (draft.prepTime !== undefined) setPrepTime(draft.prepTime);
-    if (draft.servings !== undefined) setServings(draft.servings);
-    if (draft.protein !== undefined) setProtein(draft.protein);
-    if (draft.carbs !== undefined) setCarbs(draft.carbs);
-    if (draft.fat !== undefined) setFat(draft.fat);
-    if (draft.ingredients && draft.ingredients.length > 0) {
-      setIngredients(draft.ingredients);
-    }
-    if (draft.steps && draft.steps.length > 0) {
-      setSteps(draft.steps);
-    }
+    setCategory(draft.category ?? 'main');
+    setCalories(draft.calories ?? '');
+    setCaloriesPer100g(draft.caloriesPer100g ?? '');
+    setPrepTime(draft.prepTime ?? '');
+    setServings(draft.servings ?? '2');
+    setProtein(draft.protein ?? '');
+    setCarbs(draft.carbs ?? '');
+    setFat(draft.fat ?? '');
+    setIngredients(
+      draft.ingredients && draft.ingredients.length > 0
+        ? draft.ingredients
+        : [{ id: uid(), name: '', amount: '', unit: 'g' }],
+    );
+    setSteps(
+      draft.steps && draft.steps.length > 0
+        ? draft.steps
+        : [{ id: uid(), text: '' }],
+    );
     Alert.alert(t('addRecipe.jsonImport'), t('addRecipe.jsonApplied'));
   };
 
@@ -337,15 +358,22 @@ export default function AddRecipeScreen() {
     if (saving) return;
     const cleanIngredients: Ingredient[] = ingredients
       .filter((it) => it.name.trim() !== '' && it.amount.trim() !== '')
-      .map((it) => ({
-        id: uid(),
-        name: {
-          de: it.name.trim(),
-          fa: it.nameFa?.trim() || it.name.trim(),
-        },
-        amount: Number(it.amount.replace(',', '.')) || 0,
-        unit: it.unit,
-      }));
+      .map((it) => {
+        const kcal =
+          it.calories !== undefined && it.calories.trim() !== ''
+            ? Number(it.calories.replace(',', '.'))
+            : NaN;
+        return {
+          id: uid(),
+          name: {
+            de: it.name.trim(),
+            fa: it.nameFa?.trim() || it.name.trim(),
+          },
+          amount: Number(it.amount.replace(',', '.')) || 0,
+          unit: it.unit,
+          ...(Number.isFinite(kcal) ? { calories: kcal } : {}),
+        };
+      });
 
     if (!name.trim() || cleanIngredients.length === 0) {
       Alert.alert(t('addRecipe.title'), t('addRecipe.required'));
@@ -386,6 +414,7 @@ export default function AddRecipeScreen() {
     const trimmedDescFa = descriptionFa.trim();
     const hasDescription = trimmedDescDe.length > 0 || trimmedDescFa.length > 0;
 
+    const parsedPer100 = Number(caloriesPer100g.replace(',', '.'));
     const recipe: Recipe = {
       id: isEditMode && editId ? editId : `custom-${uid()}`,
       name: {
@@ -401,6 +430,9 @@ export default function AddRecipeScreen() {
       category,
       imageUrl: finalImage,
       calories: Number(calories) || 0,
+      ...(Number.isFinite(parsedPer100) && parsedPer100 > 0
+        ? { caloriesPer100g: parsedPer100 }
+        : {}),
       prepTimeMinutes: Number(prepTime) || 0,
       servings: Number(servings) || 1,
       macros: {
@@ -420,6 +452,7 @@ export default function AddRecipeScreen() {
         category: recipe.category,
         imageUrl: recipe.imageUrl,
         calories: recipe.calories,
+        caloriesPer100g: recipe.caloriesPer100g,
         prepTimeMinutes: recipe.prepTimeMinutes,
         servings: recipe.servings,
         macros: recipe.macros,

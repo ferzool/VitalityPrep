@@ -89,33 +89,29 @@ export default function PlannerScreen() {
     ]);
   };
 
-  const onSlotPress = (day: Day, slot: MealSlot) => {
-    const id = week[day]?.[slot];
-    if (id) {
-      const recipe = recipesById.get(id);
-      Alert.alert(
-        recipe ? tr(recipe.name) : t('planner.title'),
-        undefined,
-        [
-          recipe
-            ? {
-                text: t('recipe.ingredients'),
-                onPress: () => router.push(`/recipe/${recipe.id}`),
-              }
-            : null,
-          {
-            text: t('planner.remove'),
-            style: 'destructive',
-            onPress: () => removeMeal(day, slot),
-          },
-          { text: t('common.cancel'), style: 'cancel' },
-        ].filter(Boolean) as never,
-      );
-    } else {
-      setPickerQuery('');
-      setPickerCategory('all');
-      setPicker({ day, slot });
-    }
+  const onAddSlot = (day: Day, slot: MealSlot) => {
+    setPickerQuery('');
+    setPickerCategory('all');
+    setPicker({ day, slot });
+  };
+
+  const onOpenSlot = (recipeId: string) => {
+    router.push(`/recipe/${recipeId}`);
+  };
+
+  const onRemoveSlot = (day: Day, slot: MealSlot) => {
+    Alert.alert(
+      t('planner.title'),
+      t('planner.removeConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('planner.remove'),
+          style: 'destructive',
+          onPress: () => removeMeal(day, slot),
+        },
+      ],
+    );
   };
 
   const onPickRecipe = (recipe: Recipe) => {
@@ -228,31 +224,31 @@ export default function PlannerScreen() {
                 {MEAL_SLOTS.map((slot) => {
                   const id = dayPlan[slot];
                   const recipe = id ? recipesById.get(id) : undefined;
-                  return (
-                    <Pressable
-                      key={slot}
-                      onPress={() => onSlotPress(day, slot)}
-                      style={({ pressed }) => [
-                        styles.slot,
-                        recipe ? styles.slotFilled : styles.slotEmpty,
-                        pressed && { opacity: 0.85 },
-                        { flexDirection: isRTL ? 'row-reverse' : 'row' },
-                      ]}
-                    >
-                      <View style={styles.slotLabelWrap}>
-                        <Text
-                          numberOfLines={1}
-                          adjustsFontSizeToFit
-                          minimumFontScale={0.8}
-                          style={[
-                            fonts.labelCaps,
-                            { color: colors.onSurfaceVariant },
-                          ]}
-                        >
-                          {t(`meal.${slot}` as TranslationKey)}
-                        </Text>
-                      </View>
-                      {recipe ? (
+                  if (recipe) {
+                    return (
+                      <Pressable
+                        key={slot}
+                        onPress={() => onOpenSlot(recipe.id)}
+                        style={({ pressed }) => [
+                          styles.slot,
+                          styles.slotFilled,
+                          pressed && { opacity: 0.85 },
+                          { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                        ]}
+                      >
+                        <View style={styles.slotLabelWrap}>
+                          <Text
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.8}
+                            style={[
+                              fonts.labelCaps,
+                              { color: colors.onSurfaceVariant },
+                            ]}
+                          >
+                            {t(`meal.${slot}` as TranslationKey)}
+                          </Text>
+                        </View>
                         <View
                           style={[
                             styles.slotContent,
@@ -289,30 +285,64 @@ export default function PlannerScreen() {
                                 },
                               ]}
                             >
-                              {recipe.calories} {t('recipe.kcal')}
+                              {recipe.caloriesPer100g !== undefined
+                                ? `${recipe.caloriesPer100g} ${t('recipe.kcalPer100g')}`
+                                : `${recipe.calories} ${t('recipe.kcal')}`}
                             </Text>
                           </View>
-                          <Icon
-                            name="close"
-                            size={16}
-                            color={colors.outline}
-                          />
+                          <Pressable
+                            onPress={() => onRemoveSlot(day, slot)}
+                            hitSlop={12}
+                            style={({ pressed }) => [
+                              styles.removeBtn,
+                              pressed && { opacity: 0.6 },
+                            ]}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('planner.remove')}
+                          >
+                            <Icon name="close" size={18} color={colors.outline} />
+                          </Pressable>
                         </View>
-                      ) : (
-                        <View
+                      </Pressable>
+                    );
+                  }
+                  return (
+                    <Pressable
+                      key={slot}
+                      onPress={() => onAddSlot(day, slot)}
+                      style={({ pressed }) => [
+                        styles.slot,
+                        styles.slotEmpty,
+                        pressed && { opacity: 0.85 },
+                        { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                      ]}
+                    >
+                      <View style={styles.slotLabelWrap}>
+                        <Text
+                          numberOfLines={1}
+                          adjustsFontSizeToFit
+                          minimumFontScale={0.8}
                           style={[
-                            styles.addRow,
-                            { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                            fonts.labelCaps,
+                            { color: colors.onSurfaceVariant },
                           ]}
                         >
-                          <Icon name="add" size={18} color={colors.primary} />
-                          <Text
-                            style={[fonts.labelCaps, { color: colors.primary }]}
-                          >
-                            {t('planner.add')}
-                          </Text>
-                        </View>
-                      )}
+                          {t(`meal.${slot}` as TranslationKey)}
+                        </Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.addRow,
+                          { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                        ]}
+                      >
+                        <Icon name="add" size={18} color={colors.primary} />
+                        <Text
+                          style={[fonts.labelCaps, { color: colors.primary }]}
+                        >
+                          {t('planner.add')}
+                        </Text>
+                      </View>
                     </Pressable>
                   );
                 })}
@@ -497,6 +527,13 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: radius.sm,
     backgroundColor: colors.surfaceContainer,
+  },
+  removeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   addRow: {
     flex: 1,

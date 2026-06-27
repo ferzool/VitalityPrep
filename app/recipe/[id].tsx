@@ -112,7 +112,9 @@ export default function RecipeDetailScreen() {
               <View style={styles.kcalPill}>
                 <Icon name="fire" size={16} color={colors.onPrimary} filled />
                 <Text style={[fonts.numericData, styles.kcalText]}>
-                  {recipe.calories} {t('recipe.kcal')}
+                  {recipe.caloriesPer100g !== undefined
+                    ? `${recipe.caloriesPer100g} ${t('recipe.kcalPer100g')}`
+                    : `${recipe.calories} ${t('recipe.kcal')}`}
                 </Text>
               </View>
               <View style={styles.timePill}>

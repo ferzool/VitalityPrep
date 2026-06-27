@@ -39,6 +39,7 @@ export interface Ingredient {
   name: Localized<string>;
   amount: number;
   unit: Unit;
+  calories?: number;
 }
 
 export interface Recipe {
@@ -48,6 +49,7 @@ export interface Recipe {
   category: Category;
   imageUrl: string;
   calories: number;
+  caloriesPer100g?: number;
   prepTimeMinutes: number;
   servings: number;
   macros: {
