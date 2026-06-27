@@ -119,6 +119,8 @@ export const fa: Record<TranslationKey, string> = {
   'auth.enrollSecretPlaceholder': 'کد محرمانه',
   'auth.enrollSecretHint': 'فقط افرادی که کد دعوت را می‌دانند می‌توانند پس‌کی ثبت کنند.',
   'auth.enrollSecretRequired': 'لطفاً کد دعوت را وارد کنید.',
+  'auth.resetAll': 'حذف همه پس‌کی‌ها و شروع مجدد',
+  'auth.resetDone': '{n} پس‌کی حذف شد. اکنون می‌توانید دوباره ثبت کنید.',
   'auth.unsupportedBrowser': 'این مرورگر از پس‌کی پشتیبانی نمی‌کند. از Safari یا Chrome استفاده کنید.',
 
   'addRecipe.title': 'دستور جدید',

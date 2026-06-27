@@ -117,6 +117,8 @@ export const de = {
   'auth.enrollSecretPlaceholder': 'Geheimer Code',
   'auth.enrollSecretHint': 'Nur Personen mit dem Einladungscode können einen Passkey registrieren.',
   'auth.enrollSecretRequired': 'Bitte gib den Einladungscode ein.',
+  'auth.resetAll': 'Alle Passkeys löschen und neu starten',
+  'auth.resetDone': '{n} Passkey(s) gelöscht. Du kannst jetzt neu registrieren.',
   'auth.unsupportedBrowser': 'Dieser Browser unterstützt keine Passkeys. Verwende Safari oder Chrome.',
 
   'addRecipe.title': 'Neues Rezept',

@@ -16,6 +16,7 @@ import { signInWithToken } from '../../src/lib/auth';
 import {
   enrollPasskey,
   isWebauthnAvailable,
+  resetAllPasskeys,
   WebauthnCancelled,
 } from '../../src/lib/webauthn';
 import { cardShadow, colors, radius, spacing } from '../../src/theme';
@@ -62,6 +63,24 @@ export default function EnrollScreen() {
           // some PWA contexts swallow Alert silently — inline error already set
         }
       }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onResetPasskeys = async () => {
+    if (!enrollSecret.trim()) {
+      setErrorMsg(t('auth.enrollSecretRequired'));
+      return;
+    }
+    setBusy(true);
+    setErrorMsg(null);
+    try {
+      const result = await resetAllPasskeys(enrollSecret.trim());
+      setErrorMsg(t('auth.resetDone').replace('{n}', String(result.deleted)));
+    } catch (err) {
+      const msg = (err as Error).message ?? t('auth.enrollError');
+      setErrorMsg(msg);
     } finally {
       setBusy(false);
     }
@@ -222,6 +241,20 @@ export default function EnrollScreen() {
             </Text>
           </View>
         ) : null}
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={onResetPasskeys}
+          disabled={busy}
+          style={({ pressed }) => [
+            styles.resetLink,
+            pressed && !busy ? { opacity: 0.7 } : null,
+          ]}
+        >
+          <Text style={[fonts.bodySm, { color: colors.error, textAlign: 'center' }]}>
+            {t('auth.resetAll')}
+          </Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -283,5 +316,9 @@ const styles = StyleSheet.create({
     padding: spacing.gutter,
     backgroundColor: colors.errorContainer,
     borderRadius: radius.lg,
+  },
+  resetLink: {
+    alignItems: 'center',
+    padding: spacing.stackMd,
   },
 });

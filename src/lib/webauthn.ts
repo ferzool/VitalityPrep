@@ -82,6 +82,12 @@ export async function loginWithPasskey(): Promise<{
   return postJson('/login-verify', { assertion });
 }
 
+export async function resetAllPasskeys(
+  enrollSecret: string,
+): Promise<{ deleted: number }> {
+  return postJson('/reset', { enrollSecret });
+}
+
 export function isWebauthnAvailable(): boolean {
   if (typeof window === 'undefined') return false;
   if (!('PublicKeyCredential' in window)) return false;
