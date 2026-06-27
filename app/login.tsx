@@ -27,6 +27,7 @@ export default function LoginScreen() {
   const { fonts, t, isRTL } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [supported, setSupported] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     setSupported(isWebauthnAvailable());
@@ -35,6 +36,7 @@ export default function LoginScreen() {
   const onSignIn = async () => {
     if (busy) return;
     setBusy(true);
+    setErrorMsg(null);
     try {
       const result = await loginWithPasskey();
       await signInWithToken(result.customToken, result.displayName);
@@ -43,7 +45,13 @@ export default function LoginScreen() {
       if (err instanceof WebauthnCancelled) {
         // user cancelled — silent
       } else {
-        Alert.alert(t('auth.signIn'), (err as Error).message ?? t('auth.signInError'));
+        const msg = (err as Error).message ?? t('auth.signInError');
+        setErrorMsg(msg);
+        try {
+          Alert.alert(t('auth.signIn'), msg);
+        } catch {
+          // some PWA contexts swallow Alert silently — inline error already set
+        }
       }
     } finally {
       setBusy(false);
@@ -112,6 +120,20 @@ export default function LoginScreen() {
           </View>
         )}
 
+        {errorMsg ? (
+          <View style={styles.errorBox}>
+            <Text
+              style={[
+                fonts.bodyLg,
+                { color: colors.onErrorContainer, textAlign: 'center' },
+                isRTL && { writingDirection: 'rtl' },
+              ]}
+            >
+              {errorMsg}
+            </Text>
+          </View>
+        ) : null}
+
         <Pressable
           accessibilityRole="link"
           onPress={() => router.push('/admin/enroll')}
@@ -159,6 +181,11 @@ const styles = StyleSheet.create({
     ...cardShadow,
   },
   unsupportedBox: {
+    padding: spacing.gutter,
+    backgroundColor: colors.errorContainer,
+    borderRadius: radius.lg,
+  },
+  errorBox: {
     padding: spacing.gutter,
     backgroundColor: colors.errorContainer,
     borderRadius: radius.lg,

@@ -28,6 +28,7 @@ export default function EnrollScreen() {
   const [enrollSecret, setEnrollSecret] = useState('');
   const [busy, setBusy] = useState(false);
   const [supported, setSupported] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     setSupported(isWebauthnAvailable());
@@ -35,12 +36,13 @@ export default function EnrollScreen() {
 
   const onEnroll = async () => {
     const name = displayName.trim();
+    setErrorMsg(null);
     if (!name) {
-      Alert.alert(t('auth.enroll'), t('auth.nameRequired'));
+      setErrorMsg(t('auth.nameRequired'));
       return;
     }
     if (!enrollSecret.trim()) {
-      Alert.alert(t('auth.enroll'), t('auth.enrollSecretRequired'));
+      setErrorMsg(t('auth.enrollSecretRequired'));
       return;
     }
     setBusy(true);
@@ -52,7 +54,13 @@ export default function EnrollScreen() {
       if (err instanceof WebauthnCancelled) {
         // user cancelled — silent
       } else {
-        Alert.alert(t('auth.enroll'), (err as Error).message ?? t('auth.enrollError'));
+        const msg = (err as Error).message ?? t('auth.enrollError');
+        setErrorMsg(msg);
+        try {
+          Alert.alert(t('auth.enroll'), msg);
+        } catch {
+          // some PWA contexts swallow Alert silently — inline error already set
+        }
       }
     } finally {
       setBusy(false);
@@ -200,6 +208,20 @@ export default function EnrollScreen() {
             </Text>
           </View>
         )}
+
+        {errorMsg ? (
+          <View style={styles.errorBox}>
+            <Text
+              style={[
+                fonts.bodyLg,
+                { color: colors.onErrorContainer, textAlign: 'center' },
+                isRTL && { writingDirection: 'rtl' },
+              ]}
+            >
+              {errorMsg}
+            </Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -253,6 +275,11 @@ const styles = StyleSheet.create({
     ...cardShadow,
   },
   unsupportedBox: {
+    padding: spacing.gutter,
+    backgroundColor: colors.errorContainer,
+    borderRadius: radius.lg,
+  },
+  errorBox: {
     padding: spacing.gutter,
     backgroundColor: colors.errorContainer,
     borderRadius: radius.lg,
