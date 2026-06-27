@@ -8,7 +8,11 @@ import {
   browserLocalPersistence,
   browserSessionPersistence,
 } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import {
+  initializeFirestore,
+  getFirestore,
+  type Firestore,
+} from 'firebase/firestore';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { Platform } from 'react-native';
 
@@ -46,7 +50,14 @@ try {
   auth = getAuth(app);
 }
 
-const db: Firestore = getFirestore(app);
+let db: Firestore;
+try {
+  // ignoreUndefinedProperties lets us include optional fields without
+  // pre-filtering — setDoc/updateDoc otherwise rejects `undefined` values.
+  db = initializeFirestore(app, { ignoreUndefinedProperties: true });
+} catch {
+  db = getFirestore(app);
+}
 const storage: FirebaseStorage = getStorage(app);
 
 export { app, auth, db, storage };
