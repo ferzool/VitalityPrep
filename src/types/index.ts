@@ -60,6 +60,7 @@ export interface Recipe {
   ingredients: Ingredient[];
   instructions: Localized<string>[];
   isCustom?: boolean;
+  addedAt?: number;
 }
 
 export interface ShoppingItem {

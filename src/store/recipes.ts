@@ -44,7 +44,12 @@ function findByNames(
 }
 
 async function writeRecipeDoc(recipe: Recipe): Promise<void> {
-  await setDoc(doc(db, 'recipes', recipe.id), recipe);
+  const doc$ = doc(db, 'recipes', recipe.id);
+  // Stamp addedAt only on first save (never overwrite an existing timestamp).
+  const withTs: Recipe = recipe.addedAt
+    ? recipe
+    : { ...recipe, addedAt: Date.now() };
+  await setDoc(doc$, withTs);
 }
 
 async function deleteRecipeDoc(id: string): Promise<void> {

@@ -11,6 +11,9 @@ export const de = {
   'recipes.add': 'Rezept hinzufügen',
   'recipes.count': 'Rezepte',
   'recipes.noResults': 'Keine Treffer für deine Suche.',
+  'recipes.sortNewest': 'Neueste zuerst',
+  'recipes.sortCalAsc': 'Kalorien ↑',
+  'recipes.sortCalDesc': 'Kalorien ↓',
 
   'search.placeholder': 'Rezepte suchen…',
 

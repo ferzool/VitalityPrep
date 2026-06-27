@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import {
   FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -136,10 +137,11 @@ export default function RecipesScreen() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category | 'all'>('all');
+  const [sort, setSort] = useState<'newest' | 'calAsc' | 'calDesc'>('newest');
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return recipes.filter((r) => {
+    const list = recipes.filter((r) => {
       if (category !== 'all' && r.category !== category) return false;
       if (q.length === 0) return true;
       const haystack = [tr(r.name), r.description ? tr(r.description) : '']
@@ -147,9 +149,20 @@ export default function RecipesScreen() {
         .toLowerCase();
       return haystack.includes(q);
     });
-  }, [recipes, query, category, tr]);
+    return [...list].sort((a, b) => {
+      if (sort === 'newest') return (b.addedAt ?? 0) - (a.addedAt ?? 0);
+      if (sort === 'calAsc') return a.calories - b.calories;
+      return b.calories - a.calories;
+    });
+  }, [recipes, query, category, sort, tr]);
 
   const isFiltering = query.trim().length > 0 || category !== 'all';
+
+  const SORTS = [
+    { key: 'newest', label: t('recipes.sortNewest') },
+    { key: 'calAsc', label: t('recipes.sortCalAsc') },
+    { key: 'calDesc', label: t('recipes.sortCalDesc') },
+  ] as const;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -186,6 +199,39 @@ export default function RecipesScreen() {
             </View>
             <SearchBar value={query} onChangeText={setQuery} />
             <CategoryFilter value={category} onChange={setCategory} />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                gap: 8,
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+              }}
+            >
+              {SORTS.map((s) => (
+                <Pressable
+                  key={s.key}
+                  onPress={() => setSort(s.key)}
+                  style={[
+                    styles.sortPill,
+                    sort === s.key && styles.sortPillActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      fonts.labelCaps,
+                      {
+                        color:
+                          sort === s.key
+                            ? colors.onPrimary
+                            : colors.onSurfaceVariant,
+                      },
+                    ]}
+                  >
+                    {s.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
         }
         ListEmptyComponent={
@@ -311,6 +357,18 @@ const styles = StyleSheet.create({
     paddingVertical: 64,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  sortPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceContainerHighest,
+    borderWidth: 1,
+    borderColor: colors.outline,
+  },
+  sortPillActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   fab: {
     position: 'absolute',

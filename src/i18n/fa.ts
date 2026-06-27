@@ -13,6 +13,9 @@ export const fa: Record<TranslationKey, string> = {
   'recipes.add': 'افزودن دستور',
   'recipes.count': 'دستور',
   'recipes.noResults': 'نتیجه‌ای برای جستجو پیدا نشد.',
+  'recipes.sortNewest': 'جدیدترین اول',
+  'recipes.sortCalAsc': 'کالری ↑',
+  'recipes.sortCalDesc': 'کالری ↓',
 
   'search.placeholder': 'جستجوی دستور…',
 
