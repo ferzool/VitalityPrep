@@ -4,7 +4,7 @@ import {
   uploadString,
   getDownloadURL,
 } from 'firebase/storage';
-import { storage } from './firebase';
+import { auth, storage } from './firebase';
 
 function randomId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -18,7 +18,14 @@ function inferExtFromMime(mime: string | null | undefined): string {
   return 'jpg';
 }
 
+function currentUid(): string {
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error('not signed in');
+  return uid;
+}
+
 export async function uploadRecipeImage(localUri: string): Promise<string> {
+  const uid = currentUid();
   const id = randomId();
 
   // Data URL: upload directly as base64
@@ -27,7 +34,7 @@ export async function uploadRecipeImage(localUri: string): Promise<string> {
     if (!match) throw new Error('invalid data URL');
     const mime = match[1] ?? 'image/jpeg';
     const ext = inferExtFromMime(mime);
-    const objectRef = ref(storage, `recipes/${id}.${ext}`);
+    const objectRef = ref(storage, `recipe-images/${uid}/${id}.${ext}`);
     await uploadString(objectRef, localUri, 'data_url', {
       contentType: mime,
     });
@@ -39,7 +46,7 @@ export async function uploadRecipeImage(localUri: string): Promise<string> {
   if (!res.ok) throw new Error(`failed to read picked image (${res.status})`);
   const blob = await res.blob();
   const ext = inferExtFromMime(blob.type);
-  const objectRef = ref(storage, `recipes/${id}.${ext}`);
+  const objectRef = ref(storage, `recipe-images/${uid}/${id}.${ext}`);
   await uploadBytes(objectRef, blob, {
     contentType: blob.type || 'image/jpeg',
   });
