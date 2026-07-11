@@ -3,7 +3,7 @@ import { useMemo, useRef, useState } from 'react';
 import {
   Animated,
   PanResponder,
-  Pressable,
+  Platform,
   StyleSheet,
   View,
   type GestureResponderEvent,
@@ -22,12 +22,14 @@ interface PlannerDropSlotProps extends PropsWithChildren {
   address: PlannerSlotAddress;
   draggable?: boolean;
   isDropTarget?: boolean;
+  isSelected?: boolean;
   isRTL?: boolean;
   dragLabel: string;
   register: (address: PlannerSlotAddress, node: View | null) => void;
   onDragStart: (source: PlannerSlotAddress) => void;
   onDragMove: (pageX: number, pageY: number) => void;
   onDragEnd: (source: PlannerSlotAddress, pageX: number, pageY: number) => void;
+  onDragTap: (source: PlannerSlotAddress) => void;
 }
 
 export function PlannerDropSlot({
@@ -35,22 +37,28 @@ export function PlannerDropSlot({
   children,
   draggable = false,
   isDropTarget = false,
+  isSelected = false,
   isRTL = false,
   dragLabel,
   register,
   onDragStart,
   onDragMove,
   onDragEnd,
+  onDragTap,
 }: PlannerDropSlotProps) {
   const translation = useRef(new Animated.ValueXY()).current;
   const [dragging, setDragging] = useState(false);
 
   const finishDrag = (
-    _event: GestureResponderEvent,
+    event: GestureResponderEvent,
     gesture: PanResponderGestureState,
   ) => {
     setDragging(false);
-    onDragEnd(address, gesture.moveX, gesture.moveY);
+    const didMove = Math.abs(gesture.dx) > 6 || Math.abs(gesture.dy) > 6;
+    const pageX = gesture.moveX || event.nativeEvent.pageX;
+    const pageY = gesture.moveY || event.nativeEvent.pageY;
+    if (didMove) onDragEnd(address, pageX, pageY);
+    else onDragTap(address);
     Animated.spring(translation, {
       toValue: { x: 0, y: 0 },
       useNativeDriver: true,
@@ -76,7 +84,7 @@ export function PlannerDropSlot({
         onPanResponderRelease: finishDrag,
         onPanResponderTerminate: finishDrag,
       }),
-    [address.day, address.slot, draggable, onDragEnd, onDragMove, onDragStart, translation],
+    [address.day, address.slot, draggable, onDragEnd, onDragMove, onDragStart, onDragTap, translation],
   );
 
   return (
@@ -88,24 +96,26 @@ export function PlannerDropSlot({
         style={[
           dragging && styles.dragging,
           isDropTarget && styles.dropTarget,
+          isSelected && styles.selected,
           { transform: translation.getTranslateTransform() },
         ]}
       >
         {children}
         {draggable ? (
-          <Pressable
+          <View
             {...panResponder.panHandlers}
+            collapsable={false}
+            accessible
             accessibilityRole="button"
             accessibilityLabel={dragLabel}
-            hitSlop={8}
-            style={({ pressed }) => [
+            style={[
               styles.handle,
               isRTL ? styles.handleLeft : styles.handleRight,
-              pressed && styles.handlePressed,
+              Platform.OS === 'web' && ({ touchAction: 'none', cursor: 'grab' } as never),
             ]}
           >
             <Icon name="drag" size={20} color={colors.onPrimary} />
-          </Pressable>
+          </View>
         ) : null}
       </Animated.View>
     </View>
@@ -127,6 +137,11 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     borderWidth: 3,
   },
+  selected: {
+    borderRadius: radius.lg,
+    borderColor: colors.primary,
+    borderWidth: 3,
+  },
   handle: {
     position: 'absolute',
     top: '50%',
@@ -140,5 +155,4 @@ const styles = StyleSheet.create({
   },
   handleRight: { right: 8 },
   handleLeft: { left: 8 },
-  handlePressed: { opacity: 0.75 },
 });

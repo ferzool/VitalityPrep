@@ -5,6 +5,7 @@ import {
   Alert,
   FlatList,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -62,6 +63,7 @@ export default function PlannerScreen() {
   const [pickerQuery, setPickerQuery] = useState('');
   const [pickerCategory, setPickerCategory] = useState<Category | 'all'>('all');
   const [draggingSource, setDraggingSource] = useState<PlannerSlotAddress | null>(null);
+  const [selectedSource, setSelectedSource] = useState<PlannerSlotAddress | null>(null);
   const [dropTargetKey, setDropTargetKey] = useState<string | null>(null);
   const slotNodes = useRef(new Map<string, View>());
   const slotRects = useRef(new Map<string, { x: number; y: number; width: number; height: number }>());
@@ -108,6 +110,25 @@ export default function PlannerScreen() {
     setDropTargetKey(null);
   }, [findDropTarget, moveMeal]);
 
+  const onDragTap = useCallback((source: PlannerSlotAddress) => {
+    setDraggingSource(null);
+    setDropTargetKey(null);
+    setSelectedSource((current) => (
+      current?.day === source.day && current.slot === source.slot ? null : source
+    ));
+  }, []);
+
+  const confirmAction = useCallback((title: string, message: string, action: () => void) => {
+    if (Platform.OS === 'web') {
+      if (window.confirm(`${title}\n\n${message}`)) action();
+      return;
+    }
+    Alert.alert(title, message, [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.confirm'), style: 'destructive', onPress: action },
+    ]);
+  }, [t]);
+
   const plannedRecipes = useMemo(() => {
     const list: Recipe[] = [];
     DAYS.forEach((day) => {
@@ -142,10 +163,7 @@ export default function PlannerScreen() {
   };
 
   const onClearWeek = () => {
-    Alert.alert(t('planner.title'), t('planner.clearWeekConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), style: 'destructive', onPress: clearWeek },
-    ]);
+    confirmAction(t('planner.title'), t('planner.clearWeekConfirm'), clearWeek);
   };
 
   const onAddSlot = (day: Day, slot: MealSlot) => {
@@ -159,25 +177,29 @@ export default function PlannerScreen() {
   };
 
   const onRemoveSlot = (day: Day, slot: MealSlot) => {
-    Alert.alert(
+    confirmAction(
       t('planner.title'),
       t('planner.removeConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('planner.remove'),
-          style: 'destructive',
-          onPress: () => removeMeal(day, slot),
-        },
-      ],
+      () => removeMeal(day, slot),
     );
   };
 
   const onClearDay = (day: Day) => {
-    Alert.alert(t(`day.${day}` as TranslationKey), t('planner.clearDayConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), style: 'destructive', onPress: () => clearDay(day) },
-    ]);
+    confirmAction(
+      t(`day.${day}` as TranslationKey),
+      t('planner.clearDayConfirm'),
+      () => clearDay(day),
+    );
+  };
+
+  const onSlotPress = (day: Day, slot: MealSlot, recipeId?: string) => {
+    if (selectedSource) {
+      moveMeal(selectedSource.day, selectedSource.slot, day, slot);
+      setSelectedSource(null);
+      return;
+    }
+    if (recipeId) onOpenSlot(recipeId);
+    else onAddSlot(day, slot);
   };
 
   const onPickRecipe = (recipe: Recipe) => {
@@ -246,7 +268,7 @@ export default function PlannerScreen() {
             />
           </View>
           <Text style={[fonts.bodySm, { color: colors.onPrimaryContainer }]}>
-            {t('planner.dragHint')}
+            {selectedSource ? t('planner.tapTargetHint') : t('planner.dragHint')}
           </Text>
         </View>
 
@@ -332,15 +354,17 @@ export default function PlannerScreen() {
                         address={{ day, slot }}
                         draggable
                         isDropTarget={dropTargetKey === `${day}:${slot}`}
+                        isSelected={selectedSource?.day === day && selectedSource.slot === slot}
                         isRTL={isRTL}
                         dragLabel={t('planner.dragMeal')}
                         register={registerSlot}
                         onDragStart={onDragStart}
                         onDragMove={onDragMove}
                         onDragEnd={onDragEnd}
+                        onDragTap={onDragTap}
                       >
                         <Pressable
-                          onPress={() => onOpenSlot(recipe.id)}
+                          onPress={() => onSlotPress(day, slot, recipe.id)}
                           style={({ pressed }) => [
                             styles.slot,
                             styles.slotFilled,
@@ -407,7 +431,10 @@ export default function PlannerScreen() {
                             </Text>
                           </View>
                           <Pressable
-                            onPress={() => onRemoveSlot(day, slot)}
+                            onPress={(event) => {
+                              event.stopPropagation();
+                              onRemoveSlot(day, slot);
+                            }}
                             hitSlop={12}
                             style={({ pressed }) => [
                               styles.removeBtn,
@@ -434,9 +461,10 @@ export default function PlannerScreen() {
                       onDragStart={onDragStart}
                       onDragMove={onDragMove}
                       onDragEnd={onDragEnd}
+                      onDragTap={onDragTap}
                     >
                       <Pressable
-                        onPress={() => onAddSlot(day, slot)}
+                        onPress={() => onSlotPress(day, slot)}
                         style={({ pressed }) => [
                           styles.slot,
                           styles.slotEmpty,
