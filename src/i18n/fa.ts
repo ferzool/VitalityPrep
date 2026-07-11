@@ -44,6 +44,7 @@ export const fa: Record<TranslationKey, string> = {
   'recipe.edit': 'ویرایش',
 
   'shopping.title': 'لیست خرید',
+  'shopping.sharedHint': 'این لیست مشترک است و تغییرات هر دو کاربر اینجا نمایش داده می‌شود.',
   'shopping.empty':
     'لیست خرید شما خالی است. از یک دستور مواد را اضافه کنید.',
   'shopping.clearChecked': 'حذف موارد انجام‌شده',

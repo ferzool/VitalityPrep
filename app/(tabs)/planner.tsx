@@ -5,7 +5,6 @@ import {
   Alert,
   FlatList,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -22,6 +21,7 @@ import {
 import { SearchBar } from '../../src/components/SearchBar';
 import { useSafeInsets } from '../../src/hooks/useSafeInsets';
 import { useTranslation, type TranslationKey } from '../../src/hooks/useTranslation';
+import { confirmAction } from '../../src/lib/confirmAction';
 import { usePlanner } from '../../src/store/planner';
 import { useRecipes } from '../../src/store/recipes';
 import { useShopping } from '../../src/store/shopping';
@@ -118,17 +118,6 @@ export default function PlannerScreen() {
     ));
   }, []);
 
-  const confirmAction = useCallback((title: string, message: string, action: () => void) => {
-    if (Platform.OS === 'web') {
-      if (window.confirm(`${title}\n\n${message}`)) action();
-      return;
-    }
-    Alert.alert(title, message, [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), style: 'destructive', onPress: action },
-    ]);
-  }, [t]);
-
   const plannedRecipes = useMemo(() => {
     const list: Recipe[] = [];
     DAYS.forEach((day) => {
@@ -163,7 +152,13 @@ export default function PlannerScreen() {
   };
 
   const onClearWeek = () => {
-    confirmAction(t('planner.title'), t('planner.clearWeekConfirm'), clearWeek);
+    confirmAction({
+      title: t('planner.title'),
+      message: t('planner.clearWeekConfirm'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.confirm'),
+      onConfirm: clearWeek,
+    });
   };
 
   const onAddSlot = (day: Day, slot: MealSlot) => {
@@ -177,19 +172,23 @@ export default function PlannerScreen() {
   };
 
   const onRemoveSlot = (day: Day, slot: MealSlot) => {
-    confirmAction(
-      t('planner.title'),
-      t('planner.removeConfirm'),
-      () => removeMeal(day, slot),
-    );
+    confirmAction({
+      title: t('planner.title'),
+      message: t('planner.removeConfirm'),
+      cancelText: t('common.cancel'),
+      confirmText: t('planner.remove'),
+      onConfirm: () => removeMeal(day, slot),
+    });
   };
 
   const onClearDay = (day: Day) => {
-    confirmAction(
-      t(`day.${day}` as TranslationKey),
-      t('planner.clearDayConfirm'),
-      () => clearDay(day),
-    );
+    confirmAction({
+      title: t(`day.${day}` as TranslationKey),
+      message: t('planner.clearDayConfirm'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.confirm'),
+      onConfirm: () => clearDay(day),
+    });
   };
 
   const onSlotPress = (day: Day, slot: MealSlot, recipeId?: string) => {

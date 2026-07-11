@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CategoryDropdown } from '../../src/components/CategoryDropdown';
 import { Icon } from '../../src/components/Icon';
 import { useTranslation, type TranslationKey } from '../../src/hooks/useTranslation';
+import { confirmAction } from '../../src/lib/confirmAction';
 import { uploadRecipeImage } from '../../src/lib/imageUpload';
 import { useRecipes } from '../../src/store/recipes';
 import { cardShadow, colors, radius, spacing } from '../../src/theme';
@@ -469,17 +470,16 @@ export default function AddRecipeScreen() {
 
   const onDeleteFromEdit = () => {
     if (!isEditMode || !editId) return;
-    Alert.alert(t('recipe.delete'), t('recipe.deleteConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.delete'),
-        style: 'destructive',
-        onPress: () => {
-          removeRecipe(editId);
-          router.replace('/');
-        },
+    confirmAction({
+      title: t('recipe.delete'),
+      message: t('recipe.deleteConfirm'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.delete'),
+      onConfirm: () => {
+        removeRecipe(editId);
+        router.replace('/');
       },
-    ]);
+    });
   };
 
   return (

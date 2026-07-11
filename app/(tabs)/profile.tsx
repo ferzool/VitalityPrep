@@ -1,7 +1,6 @@
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,7 @@ import { Icon, type IconName } from '../../src/components/Icon';
 import { LanguageToggle } from '../../src/components/LanguageToggle';
 import { useTranslation } from '../../src/hooks/useTranslation';
 import { signOutUser } from '../../src/lib/auth';
+import { confirmAction } from '../../src/lib/confirmAction';
 import { useAuth } from '../../src/store/auth';
 import { usePlanner } from '../../src/store/planner';
 import { useRecipes } from '../../src/store/recipes';
@@ -108,37 +108,43 @@ export default function ProfileScreen() {
   const version = Constants.expoConfig?.version ?? '1.0.0';
 
   const onResetRecipes = () => {
-    Alert.alert(t('profile.title'), t('profile.resetRecipesConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), style: 'destructive', onPress: resetCustom },
-    ]);
+    confirmAction({
+      title: t('profile.title'),
+      message: t('profile.resetRecipesConfirm'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.confirm'),
+      onConfirm: resetCustom,
+    });
   };
 
   const onClearShopping = () => {
-    Alert.alert(t('profile.title'), t('shopping.confirmClearAll'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), style: 'destructive', onPress: clearShopping },
-    ]);
+    confirmAction({
+      title: t('profile.title'),
+      message: t('shopping.confirmClearAll'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.confirm'),
+      onConfirm: clearShopping,
+    });
   };
 
   const onClearPlanner = () => {
-    Alert.alert(t('profile.title'), t('planner.clearWeekConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), style: 'destructive', onPress: clearPlanner },
-    ]);
+    confirmAction({
+      title: t('profile.title'),
+      message: t('planner.clearWeekConfirm'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.confirm'),
+      onConfirm: clearPlanner,
+    });
   };
 
   const onSignOut = () => {
-    Alert.alert(t('auth.signOut'), t('auth.signOutConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('auth.signOut'),
-        style: 'destructive',
-        onPress: async () => {
-          await signOutUser();
-        },
-      },
-    ]);
+    confirmAction({
+      title: t('auth.signOut'),
+      message: t('auth.signOutConfirm'),
+      cancelText: t('common.cancel'),
+      confirmText: t('auth.signOut'),
+      onConfirm: signOutUser,
+    });
   };
 
   return (

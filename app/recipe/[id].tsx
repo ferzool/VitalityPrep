@@ -15,6 +15,7 @@ import { Icon, type IconName } from '../../src/components/Icon';
 import { IngredientRow } from '../../src/components/IngredientRow';
 import { MacroBox } from '../../src/components/MacroBox';
 import { useTranslation } from '../../src/hooks/useTranslation';
+import { confirmAction } from '../../src/lib/confirmAction';
 import { useRecipes } from '../../src/store/recipes';
 import { useShopping } from '../../src/store/shopping';
 import { cardShadow, colors, radius, spacing } from '../../src/theme';
@@ -55,17 +56,16 @@ export default function RecipeDetailScreen() {
   };
 
   const onDelete = () => {
-    Alert.alert(t('recipe.delete'), t('recipe.deleteConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.delete'),
-        style: 'destructive',
-        onPress: () => {
-          removeRecipe(recipe.id);
-          router.back();
-        },
+    confirmAction({
+      title: t('recipe.delete'),
+      message: t('recipe.deleteConfirm'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.delete'),
+      onConfirm: () => {
+        removeRecipe(recipe.id);
+        router.back();
       },
-    ]);
+    });
   };
 
   const onEdit = () => {

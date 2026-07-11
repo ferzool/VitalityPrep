@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import {
-  Alert,
   FlatList,
   Pressable,
   StyleSheet,
@@ -12,6 +11,7 @@ import { AppHeader } from '../../src/components/AppHeader';
 import { Icon } from '../../src/components/Icon';
 import { QuantityCounter } from '../../src/components/QuantityCounter';
 import { useTranslation } from '../../src/hooks/useTranslation';
+import { confirmAction } from '../../src/lib/confirmAction';
 import { useShopping } from '../../src/store/shopping';
 import { cardShadow, colors, radius, spacing } from '../../src/theme';
 import type { ShoppingItem, Unit } from '../../src/types';
@@ -119,17 +119,23 @@ export default function ShoppingListScreen() {
   const total = items.length;
 
   const confirmClearChecked = () => {
-    Alert.alert(t('shopping.title'), t('shopping.confirmClearChecked'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), style: 'destructive', onPress: clearChecked },
-    ]);
+    confirmAction({
+      title: t('shopping.title'),
+      message: t('shopping.confirmClearChecked'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.confirm'),
+      onConfirm: clearChecked,
+    });
   };
 
   const confirmClearAll = () => {
-    Alert.alert(t('shopping.title'), t('shopping.confirmClearAll'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.confirm'), style: 'destructive', onPress: clearAll },
-    ]);
+    confirmAction({
+      title: t('shopping.title'),
+      message: t('shopping.confirmClearAll'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.confirm'),
+      onConfirm: clearAll,
+    });
   };
 
   return (
@@ -153,6 +159,15 @@ export default function ShoppingListScreen() {
               ]}
             >
               {t('shopping.title')}
+            </Text>
+            <Text
+              style={[
+                fonts.bodySm,
+                { color: colors.secondary },
+                isRTL && { writingDirection: 'rtl', textAlign: 'right' },
+              ]}
+            >
+              {t('shopping.sharedHint')}
             </Text>
             {total > 0 ? (
               <View

@@ -42,6 +42,7 @@ export const de = {
   'recipe.edit': 'Bearbeiten',
 
   'shopping.title': 'Einkaufsliste',
+  'shopping.sharedHint': 'Gemeinsame Liste – Änderungen beider Benutzer erscheinen hier.',
   'shopping.empty':
     'Deine Einkaufsliste ist leer. Füge Zutaten aus einem Rezept hinzu.',
   'shopping.clearChecked': 'Erledigte entfernen',
