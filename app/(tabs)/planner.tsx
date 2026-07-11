@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -11,11 +11,15 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader } from '../../src/components/AppHeader';
 import { CategoryFilter } from '../../src/components/CategoryFilter';
 import { Icon } from '../../src/components/Icon';
+import {
+  PlannerDropSlot,
+  type PlannerSlotAddress,
+} from '../../src/components/PlannerDropSlot';
 import { SearchBar } from '../../src/components/SearchBar';
+import { useSafeInsets } from '../../src/hooks/useSafeInsets';
 import { useTranslation, type TranslationKey } from '../../src/hooks/useTranslation';
 import { usePlanner } from '../../src/store/planner';
 import { useRecipes } from '../../src/store/recipes';
@@ -36,13 +40,15 @@ interface PickerTarget {
 }
 
 export default function PlannerScreen() {
-  const insets = useSafeAreaInsets();
+  const insets = useSafeInsets();
   const router = useRouter();
   const { fonts, t, tr, isRTL } = useTranslation();
   const recipes = useRecipes((s) => s.recipes);
   const week = usePlanner((s) => s.week);
   const setMeal = usePlanner((s) => s.setMeal);
   const removeMeal = usePlanner((s) => s.removeMeal);
+  const moveMeal = usePlanner((s) => s.moveMeal);
+  const clearDay = usePlanner((s) => s.clearDay);
   const clearWeek = usePlanner((s) => s.clearWeek);
   const addRecipesAll = useShopping((s) => s.addRecipesAll);
 
@@ -55,6 +61,52 @@ export default function PlannerScreen() {
   const [picker, setPicker] = useState<PickerTarget | null>(null);
   const [pickerQuery, setPickerQuery] = useState('');
   const [pickerCategory, setPickerCategory] = useState<Category | 'all'>('all');
+  const [draggingSource, setDraggingSource] = useState<PlannerSlotAddress | null>(null);
+  const [dropTargetKey, setDropTargetKey] = useState<string | null>(null);
+  const slotNodes = useRef(new Map<string, View>());
+  const slotRects = useRef(new Map<string, { x: number; y: number; width: number; height: number }>());
+
+  const registerSlot = useCallback((address: PlannerSlotAddress, node: View | null) => {
+    const key = `${address.day}:${address.slot}`;
+    if (node) slotNodes.current.set(key, node);
+    else slotNodes.current.delete(key);
+  }, []);
+
+  const findDropTarget = useCallback((pageX: number, pageY: number) => {
+    for (const [key, rect] of slotRects.current) {
+      if (
+        pageX >= rect.x &&
+        pageX <= rect.x + rect.width &&
+        pageY >= rect.y &&
+        pageY <= rect.y + rect.height
+      ) return key;
+    }
+    return null;
+  }, []);
+
+  const onDragStart = useCallback((source: PlannerSlotAddress) => {
+    setDraggingSource(source);
+    slotRects.current.clear();
+    slotNodes.current.forEach((node, key) => {
+      node.measureInWindow((x, y, width, height) => {
+        slotRects.current.set(key, { x, y, width, height });
+      });
+    });
+  }, []);
+
+  const onDragMove = useCallback((pageX: number, pageY: number) => {
+    setDropTargetKey(findDropTarget(pageX, pageY));
+  }, [findDropTarget]);
+
+  const onDragEnd = useCallback((source: PlannerSlotAddress, pageX: number, pageY: number) => {
+    const targetKey = findDropTarget(pageX, pageY);
+    if (targetKey) {
+      const [day, slot] = targetKey.split(':') as [Day, MealSlot];
+      moveMeal(source.day, source.slot, day, slot);
+    }
+    setDraggingSource(null);
+    setDropTargetKey(null);
+  }, [findDropTarget, moveMeal]);
 
   const plannedRecipes = useMemo(() => {
     const list: Recipe[] = [];
@@ -70,6 +122,13 @@ export default function PlannerScreen() {
     });
     return list;
   }, [week, recipesById]);
+
+  const plannedCount = useMemo(
+    () => DAYS.reduce((total, day) => (
+      total + MEAL_SLOTS.filter((slot) => Boolean(week[day]?.[slot])).length
+    ), 0),
+    [week],
+  );
 
   const onAddToShopping = () => {
     if (plannedRecipes.length === 0) {
@@ -114,6 +173,13 @@ export default function PlannerScreen() {
     );
   };
 
+  const onClearDay = (day: Day) => {
+    Alert.alert(t(`day.${day}` as TranslationKey), t('planner.clearDayConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.confirm'), style: 'destructive', onPress: () => clearDay(day) },
+    ]);
+  };
+
   const onPickRecipe = (recipe: Recipe) => {
     if (!picker) return;
     setMeal(picker.day, picker.slot, recipe.id);
@@ -133,8 +199,10 @@ export default function PlannerScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <AppHeader />
       <ScrollView
+        scrollEnabled={draggingSource === null}
         contentContainerStyle={{
-          padding: spacing.marginMobile,
+          paddingTop: spacing.marginMobile,
+          paddingHorizontal: spacing.marginMobile + Math.max(insets.left, insets.right),
           paddingBottom: spacing.marginMobile + 60 + insets.bottom,
           gap: spacing.stackLg,
         }}
@@ -160,7 +228,29 @@ export default function PlannerScreen() {
           </Text>
         </View>
 
-        {plannedRecipes.length > 0 ? (
+        <View style={styles.weekSummary}>
+          <View style={styles.progressCopy}>
+            <Text style={[fonts.headlineMd, { color: colors.onPrimary }]}>
+              {plannedCount}/21
+            </Text>
+            <Text style={[fonts.bodySm, { color: colors.onPrimaryContainer }]}>
+              {t('planner.mealsPlanned')}
+            </Text>
+          </View>
+          <View style={styles.progressTrack}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${Math.round((plannedCount / 21) * 100)}%` },
+              ]}
+            />
+          </View>
+          <Text style={[fonts.bodySm, { color: colors.onPrimaryContainer }]}>
+            {t('planner.dragHint')}
+          </Text>
+        </View>
+
+        {plannedCount > 0 ? (
           <View
             style={[
               styles.actionsRow,
@@ -218,7 +308,18 @@ export default function PlannerScreen() {
                   <Text style={[fonts.labelCaps, { color: colors.outline }]}>
                     {t('planner.empty')}
                   </Text>
-                ) : null}
+                ) : (
+                  <Pressable
+                    onPress={() => onClearDay(day)}
+                    hitSlop={8}
+                    style={({ pressed }) => [styles.clearDayBtn, pressed && { opacity: 0.65 }]}
+                  >
+                    <Icon name="delete" size={17} color={colors.error} />
+                    <Text style={[fonts.labelCaps, { color: colors.error }]}>
+                      {t('planner.clearDay')}
+                    </Text>
+                  </Pressable>
+                )}
               </View>
               <View style={{ gap: spacing.stackSm }}>
                 {MEAL_SLOTS.map((slot) => {
@@ -226,16 +327,31 @@ export default function PlannerScreen() {
                   const recipe = id ? recipesById.get(id) : undefined;
                   if (recipe) {
                     return (
-                      <Pressable
+                      <PlannerDropSlot
                         key={slot}
-                        onPress={() => onOpenSlot(recipe.id)}
-                        style={({ pressed }) => [
-                          styles.slot,
-                          styles.slotFilled,
-                          pressed && { opacity: 0.85 },
-                          { flexDirection: isRTL ? 'row-reverse' : 'row' },
-                        ]}
+                        address={{ day, slot }}
+                        draggable
+                        isDropTarget={dropTargetKey === `${day}:${slot}`}
+                        isRTL={isRTL}
+                        dragLabel={t('planner.dragMeal')}
+                        register={registerSlot}
+                        onDragStart={onDragStart}
+                        onDragMove={onDragMove}
+                        onDragEnd={onDragEnd}
                       >
+                        <Pressable
+                          onPress={() => onOpenSlot(recipe.id)}
+                          style={({ pressed }) => [
+                            styles.slot,
+                            styles.slotFilled,
+                            pressed && { opacity: 0.85 },
+                            {
+                              flexDirection: isRTL ? 'row-reverse' : 'row',
+                              paddingLeft: isRTL ? 48 : spacing.stackMd,
+                              paddingRight: isRTL ? spacing.stackMd : 48,
+                            },
+                          ]}
+                        >
                         <View style={styles.slotLabelWrap}>
                           <Text
                             numberOfLines={1}
@@ -303,20 +419,31 @@ export default function PlannerScreen() {
                             <Icon name="close" size={18} color={colors.outline} />
                           </Pressable>
                         </View>
-                      </Pressable>
+                        </Pressable>
+                      </PlannerDropSlot>
                     );
                   }
                   return (
-                    <Pressable
+                    <PlannerDropSlot
                       key={slot}
-                      onPress={() => onAddSlot(day, slot)}
-                      style={({ pressed }) => [
-                        styles.slot,
-                        styles.slotEmpty,
-                        pressed && { opacity: 0.85 },
-                        { flexDirection: isRTL ? 'row-reverse' : 'row' },
-                      ]}
+                      address={{ day, slot }}
+                      isDropTarget={dropTargetKey === `${day}:${slot}`}
+                      isRTL={isRTL}
+                      dragLabel={t('planner.dragMeal')}
+                      register={registerSlot}
+                      onDragStart={onDragStart}
+                      onDragMove={onDragMove}
+                      onDragEnd={onDragEnd}
                     >
+                      <Pressable
+                        onPress={() => onAddSlot(day, slot)}
+                        style={({ pressed }) => [
+                          styles.slot,
+                          styles.slotEmpty,
+                          pressed && { opacity: 0.85 },
+                          { flexDirection: isRTL ? 'row-reverse' : 'row' },
+                        ]}
+                      >
                       <View style={styles.slotLabelWrap}>
                         <Text
                           numberOfLines={1}
@@ -343,7 +470,8 @@ export default function PlannerScreen() {
                           {t('planner.add')}
                         </Text>
                       </View>
-                    </Pressable>
+                      </Pressable>
+                    </PlannerDropSlot>
                   );
                 })}
               </View>
@@ -464,6 +592,29 @@ export default function PlannerScreen() {
 }
 
 const styles = StyleSheet.create({
+  weekSummary: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.xl,
+    padding: spacing.gutter,
+    gap: spacing.stackSm,
+    ...cardShadow,
+  },
+  progressCopy: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.base,
+  },
+  progressTrack: {
+    height: 7,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.22)',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: radius.pill,
+    backgroundColor: colors.primaryFixed,
+  },
   actionsRow: {
     alignItems: 'center',
     gap: spacing.stackMd,
@@ -496,6 +647,14 @@ const styles = StyleSheet.create({
   dayHeader: {
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  clearDayBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: radius.pill,
+    backgroundColor: colors.errorContainer,
   },
   slot: {
     backgroundColor: colors.background,

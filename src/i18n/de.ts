@@ -63,6 +63,11 @@ export const de = {
   'planner.clearWeek': 'Woche leeren',
   'planner.clearWeekConfirm': 'Den ganzen Wochenplan löschen?',
   'planner.add': 'Hinzufügen',
+  'planner.mealsPlanned': 'Mahlzeiten geplant',
+  'planner.dragHint': 'Am Griff ziehen, um Mahlzeiten zu verschieben oder zu tauschen.',
+  'planner.dragMeal': 'Mahlzeit verschieben',
+  'planner.clearDay': 'Leeren',
+  'planner.clearDayConfirm': 'Alle Mahlzeiten dieses Tages löschen?',
 
   'meal.breakfast': 'Frühstück',
   'meal.lunch': 'Mittag',

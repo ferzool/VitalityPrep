@@ -65,6 +65,11 @@ export const fa: Record<TranslationKey, string> = {
   'planner.clearWeek': 'پاک‌کردن هفته',
   'planner.clearWeekConfirm': 'کل برنامه هفتگی پاک شود؟',
   'planner.add': 'افزودن',
+  'planner.mealsPlanned': 'وعده برنامه‌ریزی شده',
+  'planner.dragHint': 'برای جابه‌جایی یا تعویض وعده‌ها، دستگیره را بکشید.',
+  'planner.dragMeal': 'جابه‌جایی وعده',
+  'planner.clearDay': 'پاک کردن',
+  'planner.clearDayConfirm': 'همه وعده‌های این روز پاک شوند؟',
 
   'meal.breakfast': 'صبحانه',
   'meal.lunch': 'ناهار',

@@ -37,7 +37,8 @@ export type IconName =
   | 'edit'
   | 'open-in-new'
   | 'fingerprint'
-  | 'logout';
+  | 'logout'
+  | 'drag';
 
 const map: Record<IconName, MIName> = {
   'arrow-back': 'arrow-back-ios',
@@ -74,6 +75,7 @@ const map: Record<IconName, MIName> = {
   'open-in-new': 'open-in-new',
   fingerprint: 'fingerprint',
   logout: 'logout',
+  drag: 'drag-indicator',
 };
 
 interface IconProps {

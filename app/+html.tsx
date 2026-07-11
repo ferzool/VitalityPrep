@@ -2,8 +2,11 @@ import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
 const APP_CSS = `
-html, body, #root { background-color: #f9f7f3; }
-body { min-height: 100dvh; margin: 0; }
+html { background-color: #4d6054; }
+html, body, #root { width: 100%; height: 100%; min-height: 100dvh; }
+body, #root { background-color: #f7faf5; }
+body { margin: 0; overflow: hidden; overscroll-behavior: none; }
+#root { display: flex; }
 * { -webkit-tap-highlight-color: transparent; }
 `;
 

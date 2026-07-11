@@ -8,6 +8,7 @@ interface PlannerState {
   hydrated: boolean;
   setMeal: (day: Day, slot: MealSlot, recipeId: string) => void;
   removeMeal: (day: Day, slot: MealSlot) => void;
+  moveMeal: (fromDay: Day, fromSlot: MealSlot, toDay: Day, toSlot: MealSlot) => void;
   clearDay: (day: Day) => void;
   clearWeek: () => void;
   getRecipeIds: () => string[];
@@ -25,6 +26,7 @@ export const usePlanner = create<PlannerState>()((set, get) => ({
     const dayPlan = { ...(week[day] ?? {}) };
     dayPlan[slot] = recipeId;
     const next = { ...week, [day]: dayPlan };
+    set({ week: next });
     void persistWeek(next);
   },
   removeMeal: (day, slot) => {
@@ -37,15 +39,41 @@ export const usePlanner = create<PlannerState>()((set, get) => ({
     } else {
       next[day] = dayPlan;
     }
+    set({ week: next });
+    void persistWeek(next);
+  },
+  moveMeal: (fromDay, fromSlot, toDay, toSlot) => {
+    if (fromDay === toDay && fromSlot === toSlot) return;
+    const week = get().week;
+    const recipeId = week[fromDay]?.[fromSlot];
+    if (!recipeId) return;
+
+    const sourceDay = { ...(week[fromDay] ?? {}) };
+    const targetDay = fromDay === toDay
+      ? sourceDay
+      : { ...(week[toDay] ?? {}) };
+    const replacedRecipeId = targetDay[toSlot];
+
+    delete sourceDay[fromSlot];
+    targetDay[toSlot] = recipeId;
+    if (replacedRecipeId) sourceDay[fromSlot] = replacedRecipeId;
+
+    const next = { ...week };
+    if (Object.keys(sourceDay).length === 0) delete next[fromDay];
+    else next[fromDay] = sourceDay;
+    next[toDay] = targetDay;
+    set({ week: next });
     void persistWeek(next);
   },
   clearDay: (day) => {
     const week = get().week;
     const next = { ...week };
     delete next[day];
+    set({ week: next });
     void persistWeek(next);
   },
   clearWeek: () => {
+    set({ week: {} });
     void persistWeek({});
   },
   getRecipeIds: () => {
