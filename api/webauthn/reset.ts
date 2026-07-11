@@ -4,6 +4,7 @@ import {
   EnrollSecretError,
 } from '../_lib/webauthnHelpers.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
+import { getAdminAuth } from '../_lib/firebaseAdmin.js';
 
 export default async function handler(
   req: VercelRequest,
@@ -25,9 +26,19 @@ export default async function handler(
     }
     const db = getAdminDb();
     const snap = await db.collection('_webauthn_credentials').get();
-    const batch = db.batch();
-    snap.docs.forEach((d) => batch.delete(d.ref));
-    await batch.commit();
+    const userIds = new Set(
+      snap.docs.map((document) => (document.data() as { userId: string }).userId),
+    );
+    await Promise.all(
+      Array.from(userIds).map((userId) =>
+        getAdminAuth().revokeRefreshTokens(userId),
+      ),
+    );
+    const challenges = await db.collection('_webauthn_challenges').get();
+    const writer = db.bulkWriter();
+    snap.docs.forEach((d) => writer.delete(d.ref));
+    challenges.docs.forEach((d) => writer.delete(d.ref));
+    await writer.close();
     res.status(200).json({ deleted: snap.size });
   } catch (err) {
     console.error('reset error:', err);

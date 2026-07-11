@@ -16,12 +16,19 @@ export function confirmAction({
   confirmText,
   onConfirm,
 }: ConfirmActionOptions): void {
+  const run = () => {
+    void Promise.resolve(onConfirm()).catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
+      else Alert.alert(title, message);
+    });
+  };
   if (Platform.OS === 'web') {
-    if (window.confirm(`${title}\n\n${message}`)) void onConfirm();
+    if (window.confirm(`${title}\n\n${message}`)) run();
     return;
   }
   Alert.alert(title, message, [
     { text: cancelText, style: 'cancel' },
-    { text: confirmText, style: 'destructive', onPress: onConfirm },
+    { text: confirmText, style: 'destructive', onPress: run },
   ]);
 }

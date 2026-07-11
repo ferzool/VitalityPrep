@@ -1,11 +1,14 @@
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, runTransaction } from 'firebase/firestore';
 import { create } from 'zustand';
 import { db } from '../lib/firebase';
+import { messageFromError } from '../lib/firestoreBatch';
+import { clearWeekDay, moveWeekMeal, removeWeekMeal, setWeekMeal } from '../lib/plannerWeek';
 import type { Day, MealSlot, PlannerWeek } from '../types';
 
 interface PlannerState {
   week: PlannerWeek;
   hydrated: boolean;
+  syncError: string | null;
   setMeal: (day: Day, slot: MealSlot, recipeId: string) => void;
   removeMeal: (day: Day, slot: MealSlot) => void;
   moveMeal: (fromDay: Day, fromSlot: MealSlot, toDay: Day, toSlot: MealSlot) => void;
@@ -14,67 +17,57 @@ interface PlannerState {
   getRecipeIds: () => string[];
 }
 
-async function persistWeek(week: PlannerWeek): Promise<void> {
-  await setDoc(doc(db, 'planner', 'week'), { week });
+type WeekMutation = (week: PlannerWeek) => PlannerWeek;
+
+async function persistMutation(mutate: WeekMutation): Promise<void> {
+  const ref = doc(db, 'planner', 'week');
+  await runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    const data = snapshot.data() as { week?: PlannerWeek } | undefined;
+    transaction.set(ref, { week: mutate(data?.week ?? {}) });
+  });
 }
 
 export const usePlanner = create<PlannerState>()((set, get) => ({
   week: {},
   hydrated: false,
+  syncError: null,
   setMeal: (day, slot, recipeId) => {
-    const week = get().week;
-    const dayPlan = { ...(week[day] ?? {}) };
-    dayPlan[slot] = recipeId;
-    const next = { ...week, [day]: dayPlan };
-    set({ week: next });
-    void persistWeek(next);
+    const mutate: WeekMutation = (week) => setWeekMeal(week, day, slot, recipeId);
+    set({ week: mutate(get().week), syncError: null });
+    void persistMutation(mutate).catch((error) =>
+      set({ syncError: messageFromError(error) }),
+    );
   },
   removeMeal: (day, slot) => {
-    const week = get().week;
-    const dayPlan = { ...(week[day] ?? {}) };
-    delete dayPlan[slot];
-    const next = { ...week };
-    if (Object.keys(dayPlan).length === 0) {
-      delete next[day];
-    } else {
-      next[day] = dayPlan;
-    }
-    set({ week: next });
-    void persistWeek(next);
+    const mutate: WeekMutation = (week) => removeWeekMeal(week, day, slot);
+    set({ week: mutate(get().week), syncError: null });
+    void persistMutation(mutate).catch((error) =>
+      set({ syncError: messageFromError(error) }),
+    );
   },
   moveMeal: (fromDay, fromSlot, toDay, toSlot) => {
     if (fromDay === toDay && fromSlot === toSlot) return;
-    const week = get().week;
-    const recipeId = week[fromDay]?.[fromSlot];
-    if (!recipeId) return;
-
-    const sourceDay = { ...(week[fromDay] ?? {}) };
-    const targetDay = fromDay === toDay
-      ? sourceDay
-      : { ...(week[toDay] ?? {}) };
-    const replacedRecipeId = targetDay[toSlot];
-
-    delete sourceDay[fromSlot];
-    targetDay[toSlot] = recipeId;
-    if (replacedRecipeId) sourceDay[fromSlot] = replacedRecipeId;
-
-    const next = { ...week };
-    if (Object.keys(sourceDay).length === 0) delete next[fromDay];
-    else next[fromDay] = sourceDay;
-    next[toDay] = targetDay;
-    set({ week: next });
-    void persistWeek(next);
+    const mutate: WeekMutation = (week) =>
+      moveWeekMeal(week, fromDay, fromSlot, toDay, toSlot);
+    set({ week: mutate(get().week), syncError: null });
+    void persistMutation(mutate).catch((error) =>
+      set({ syncError: messageFromError(error) }),
+    );
   },
   clearDay: (day) => {
-    const week = get().week;
-    const next = { ...week };
-    delete next[day];
-    set({ week: next });
-    void persistWeek(next);
+    const mutate: WeekMutation = (week) => clearWeekDay(week, day);
+    set({ week: mutate(get().week), syncError: null });
+    void persistMutation(mutate).catch((error) =>
+      set({ syncError: messageFromError(error) }),
+    );
   },
   clearWeek: () => {
-    set({ week: {} });
-    void persistWeek({});
+    const mutate: WeekMutation = () => ({});
+    set({ week: {}, syncError: null });
+    void persistMutation(mutate).catch((error) =>
+      set({ syncError: messageFromError(error) }),
+    );
   },
   getRecipeIds: () => {
     const ids: string[] = [];
@@ -89,5 +82,9 @@ export const usePlanner = create<PlannerState>()((set, get) => ({
 }));
 
 export function writePlannerWeek(week: PlannerWeek): void {
-  usePlanner.setState({ week, hydrated: true });
+  usePlanner.setState({ week, hydrated: true, syncError: null });
+}
+
+export function writePlannerSyncError(error: unknown): void {
+  usePlanner.setState({ syncError: messageFromError(error) });
 }

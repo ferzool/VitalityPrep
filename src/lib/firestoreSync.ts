@@ -7,9 +7,9 @@ import {
 import { seedRecipes } from '../data/recipes';
 import type { PlannerWeek, Recipe, ShoppingItem } from '../types';
 import { db } from './firebase';
-import { writePlannerWeek } from '../store/planner';
-import { writeRecipes, writeSeedsIfEmpty } from '../store/recipes';
-import { writeShoppingItems } from '../store/shopping';
+import { writePlannerSyncError, writePlannerWeek } from '../store/planner';
+import { writeRecipes, writeRecipesSyncError, writeSeedsIfEmpty } from '../store/recipes';
+import { writeShoppingItems, writeShoppingSyncError } from '../store/shopping';
 
 let unsubscribes: Unsubscribe[] = [];
 let started = false;
@@ -29,11 +29,12 @@ export function startFirestoreSync(): void {
         // Bootstrap seeds the very first time (only if collection truly empty
         // and we're not still loading cached data).
         if (snap.empty && !snap.metadata.fromCache) {
-          await writeSeedsIfEmpty(seedRecipes);
+          await writeSeedsIfEmpty(seedRecipes).catch(writeRecipesSyncError);
         }
       },
       (err) => {
         console.warn('recipes snapshot error', err);
+        writeRecipesSyncError(err);
       },
     ),
   );
@@ -47,6 +48,7 @@ export function startFirestoreSync(): void {
       },
       (err) => {
         console.warn('planner snapshot error', err);
+        writePlannerSyncError(err);
       },
     ),
   );
@@ -62,6 +64,7 @@ export function startFirestoreSync(): void {
       },
       (err) => {
         console.warn('shopping snapshot error', err);
+        writeShoppingSyncError(err);
       },
     ),
   );

@@ -130,6 +130,7 @@ export const de = {
   'auth.enrollSecretHint': 'Nur Personen mit dem Einladungscode können einen Passkey registrieren.',
   'auth.enrollSecretRequired': 'Bitte gib den Einladungscode ein.',
   'auth.resetAll': 'Alle Passkeys löschen und neu starten',
+  'auth.resetConfirm': 'Alle Passkeys löschen und alle angemeldeten Geräte abmelden?',
   'auth.resetDone': '{n} Passkey(s) gelöscht. Du kannst jetzt neu registrieren.',
   'auth.unsupportedBrowser': 'Dieser Browser unterstützt keine Passkeys. Verwende Safari oder Chrome.',
 
@@ -167,6 +168,7 @@ export const de = {
   'addRecipe.save': 'Speichern',
   'addRecipe.cancel': 'Abbrechen',
   'addRecipe.required': 'Bitte mindestens Name und eine Zutat angeben.',
+  'addRecipe.invalidNumber': 'Bitte nur gültige positive Mengen und nicht negative Werte eingeben.',
   'addRecipe.overwriteTitle': 'Vorhandenes Rezept gefunden',
   'addRecipe.overwriteMessage':
     'Ein Rezept mit diesem Namen existiert bereits. Möchtest du es überschreiben?',
@@ -183,6 +185,7 @@ export const de = {
   'common.from': 'aus',
   'common.close': 'Schließen',
   'common.ok': 'OK',
+  'common.syncError': 'Synchronisierung fehlgeschlagen:',
 
   'unit.g': 'g',
   'unit.kg': 'kg',

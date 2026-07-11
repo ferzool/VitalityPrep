@@ -132,6 +132,7 @@ export const fa: Record<TranslationKey, string> = {
   'auth.enrollSecretHint': 'فقط افرادی که کد دعوت را می‌دانند می‌توانند پس‌کی ثبت کنند.',
   'auth.enrollSecretRequired': 'لطفاً کد دعوت را وارد کنید.',
   'auth.resetAll': 'حذف همه پس‌کی‌ها و شروع مجدد',
+  'auth.resetConfirm': 'همه پس‌کی‌ها حذف و همه دستگاه‌های واردشده خارج شوند؟',
   'auth.resetDone': '{n} پس‌کی حذف شد. اکنون می‌توانید دوباره ثبت کنید.',
   'auth.unsupportedBrowser': 'این مرورگر از پس‌کی پشتیبانی نمی‌کند. از Safari یا Chrome استفاده کنید.',
 
@@ -169,6 +170,7 @@ export const fa: Record<TranslationKey, string> = {
   'addRecipe.save': 'ذخیره',
   'addRecipe.cancel': 'انصراف',
   'addRecipe.required': 'حداقل نام و یک ماده لازم است.',
+  'addRecipe.invalidNumber': 'لطفاً مقدارهای مثبت معتبر و عددهای غیرمنفی وارد کنید.',
   'addRecipe.overwriteTitle': 'دستور تکراری پیدا شد',
   'addRecipe.overwriteMessage':
     'دستوری با این نام وجود دارد. آیا جایگزین شود؟',
@@ -185,6 +187,7 @@ export const fa: Record<TranslationKey, string> = {
   'common.from': 'از',
   'common.close': 'بستن',
   'common.ok': 'باشه',
+  'common.syncError': 'همگام‌سازی ناموفق بود:',
 
   'unit.g': 'گرم',
   'unit.kg': 'کیلوگرم',

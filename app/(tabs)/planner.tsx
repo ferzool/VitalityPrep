@@ -19,6 +19,7 @@ import {
   type PlannerSlotAddress,
 } from '../../src/components/PlannerDropSlot';
 import { SearchBar } from '../../src/components/SearchBar';
+import { SyncErrorBanner } from '../../src/components/SyncErrorBanner';
 import { useSafeInsets } from '../../src/hooks/useSafeInsets';
 import { useTranslation, type TranslationKey } from '../../src/hooks/useTranslation';
 import { confirmAction } from '../../src/lib/confirmAction';
@@ -46,6 +47,7 @@ export default function PlannerScreen() {
   const { fonts, t, tr, isRTL } = useTranslation();
   const recipes = useRecipes((s) => s.recipes);
   const week = usePlanner((s) => s.week);
+  const syncError = usePlanner((s) => s.syncError);
   const setMeal = usePlanner((s) => s.setMeal);
   const removeMeal = usePlanner((s) => s.removeMeal);
   const moveMeal = usePlanner((s) => s.moveMeal);
@@ -248,6 +250,8 @@ export default function PlannerScreen() {
             {t('planner.subtitle')}
           </Text>
         </View>
+
+        <SyncErrorBanner message={syncError} />
 
         <View style={styles.weekSummary}>
           <View style={styles.progressCopy}>

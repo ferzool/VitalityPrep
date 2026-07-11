@@ -61,6 +61,8 @@ export interface Recipe {
   instructions: Localized<string>[];
   isCustom?: boolean;
   addedAt?: number;
+  ownerId?: string;
+  ownerName?: string;
 }
 
 export interface ShoppingItem {

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 import type { Locale } from '../types';
@@ -17,7 +18,9 @@ const noopStorage: StateStorage = {
 };
 
 const safeStorage: StateStorage =
-  typeof window === 'undefined' ? noopStorage : AsyncStorage;
+  Platform.OS === 'web' && typeof window === 'undefined'
+    ? noopStorage
+    : AsyncStorage;
 
 export const useSettings = create<SettingsState>()(
   persist(

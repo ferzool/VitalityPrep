@@ -8,13 +8,12 @@ import {
   bufferToBase64Url,
   clearChallengeCookie,
   consumeChallenge,
+  EnrollmentClosedError,
   EnrollSecretError,
   getOrigin,
   getRpId,
-  listCredentials,
-  MAX_CREDENTIALS,
   readChallengeCookie,
-  saveCredential,
+  saveCredentialIfCapacity,
   type StoredCredential,
 } from '../_lib/webauthnHelpers.js';
 import { getAdminAuth } from '../_lib/firebaseAdmin.js';
@@ -55,17 +54,12 @@ export default async function handler(
       res.status(400).json({ error: 'attestation required' });
       return;
     }
-    const credentials = await listCredentials();
-    if (credentials.length >= MAX_CREDENTIALS) {
-      res.status(403).json({ error: 'enrollment closed' });
-      return;
-    }
     const verification = await verifyRegistrationResponse({
       response: attestation,
       expectedChallenge: stored.challenge,
       expectedOrigin: getOrigin(req),
       expectedRPID: getRpId(req),
-      requireUserVerification: false,
+      requireUserVerification: true,
     });
     if (!verification.verified || !verification.registrationInfo) {
       res.status(400).json({ error: 'verification failed' });
@@ -83,7 +77,15 @@ export default async function handler(
       displayName: stored.displayName ?? 'user',
       createdAt: Date.now(),
     };
-    await saveCredential(stored2);
+    try {
+      await saveCredentialIfCapacity(stored2);
+    } catch (error) {
+      if (error instanceof EnrollmentClosedError) {
+        res.status(403).json({ error: error.message });
+        return;
+      }
+      throw error;
+    }
     const customToken = await getAdminAuth().createCustomToken(stored.userId, {
       displayName: stored.displayName,
     });

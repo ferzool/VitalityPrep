@@ -56,6 +56,8 @@ const DEFAULT_IMAGE =
   'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1080&q=80';
 
 const uid = () => Math.random().toString(36).slice(2, 10);
+const parseLocalizedNumber = (value: string): number =>
+  Number(value.trim().replace(',', '.'));
 
 const toLocalized = (value: unknown): Localized<string> | null => {
   if (typeof value === 'string') return { de: value, fa: value };
@@ -240,7 +242,7 @@ export default function AddRecipeScreen() {
     setIngredients(
       recipeToEdit.ingredients.length > 0
         ? recipeToEdit.ingredients.map((i) => ({
-            id: uid(),
+            id: i.id,
             name: i.name.de,
             nameFa: i.name.fa !== i.name.de ? i.name.fa : undefined,
             amount: String(i.amount),
@@ -357,20 +359,49 @@ export default function AddRecipeScreen() {
 
   const onSave = async () => {
     if (saving) return;
-    const cleanIngredients: Ingredient[] = ingredients
-      .filter((it) => it.name.trim() !== '' && it.amount.trim() !== '')
+    const ingredientCandidates = ingredients.filter(
+      (it) => it.name.trim() !== '' || it.amount.trim() !== '',
+    );
+    const invalidIngredient = ingredientCandidates.some((it) => {
+      const amount = parseLocalizedNumber(it.amount);
+      const kcal = it.calories?.trim()
+        ? parseLocalizedNumber(it.calories)
+        : 0;
+      return !it.name.trim() || !Number.isFinite(amount) || amount <= 0 ||
+        !Number.isFinite(kcal) || kcal < 0;
+    });
+    const parsedCalories = calories.trim() ? parseLocalizedNumber(calories) : 0;
+    const parsedPrepTime = prepTime.trim() ? parseLocalizedNumber(prepTime) : 0;
+    const parsedServings = servings.trim() ? parseLocalizedNumber(servings) : 1;
+    const parsedProtein = protein.trim() ? parseLocalizedNumber(protein) : 0;
+    const parsedCarbs = carbs.trim() ? parseLocalizedNumber(carbs) : 0;
+    const parsedFat = fat.trim() ? parseLocalizedNumber(fat) : 0;
+    const parsedPer100 = caloriesPer100g.trim()
+      ? parseLocalizedNumber(caloriesPer100g)
+      : 0;
+    const invalidTotals = [parsedCalories, parsedPrepTime, parsedProtein, parsedCarbs, parsedFat]
+      .some((value) => !Number.isFinite(value) || value < 0) ||
+      !Number.isFinite(parsedServings) || parsedServings <= 0 ||
+      !Number.isFinite(parsedPer100) || parsedPer100 < 0;
+
+    if (invalidIngredient || invalidTotals) {
+      Alert.alert(t('addRecipe.title'), t('addRecipe.invalidNumber'));
+      return;
+    }
+
+    const cleanIngredients: Ingredient[] = ingredientCandidates
       .map((it) => {
         const kcal =
           it.calories !== undefined && it.calories.trim() !== ''
-            ? Number(it.calories.replace(',', '.'))
+            ? parseLocalizedNumber(it.calories)
             : NaN;
         return {
-          id: uid(),
+          id: it.id,
           name: {
             de: it.name.trim(),
             fa: it.nameFa?.trim() || it.name.trim(),
           },
-          amount: Number(it.amount.replace(',', '.')) || 0,
+          amount: parseLocalizedNumber(it.amount),
           unit: it.unit,
           ...(Number.isFinite(kcal) ? { calories: kcal } : {}),
         };
@@ -415,7 +446,6 @@ export default function AddRecipeScreen() {
     const trimmedDescFa = descriptionFa.trim();
     const hasDescription = trimmedDescDe.length > 0 || trimmedDescFa.length > 0;
 
-    const parsedPer100 = Number(caloriesPer100g.replace(',', '.'));
     const recipe: Recipe = {
       id: isEditMode && editId ? editId : `custom-${uid()}`,
       name: {
@@ -430,24 +460,25 @@ export default function AddRecipeScreen() {
         : undefined,
       category,
       imageUrl: finalImage,
-      calories: Number(calories) || 0,
+      calories: parsedCalories,
       ...(Number.isFinite(parsedPer100) && parsedPer100 > 0
         ? { caloriesPer100g: parsedPer100 }
         : {}),
-      prepTimeMinutes: Number(prepTime) || 0,
-      servings: Number(servings) || 1,
+      prepTimeMinutes: parsedPrepTime,
+      servings: Math.max(1, Math.round(parsedServings)),
       macros: {
-        protein: Number(protein) || 0,
-        carbs: Number(carbs) || 0,
-        fat: Number(fat) || 0,
+        protein: parsedProtein,
+        carbs: parsedCarbs,
+        fat: parsedFat,
       },
       ingredients: cleanIngredients,
       instructions: cleanSteps,
       isCustom: true,
     };
 
-    if (isEditMode && editId) {
-      updateRecipe(editId, {
+    try {
+      if (isEditMode && editId) {
+        await updateRecipe(editId, {
         name: recipe.name,
         description: recipe.description,
         category: recipe.category,
@@ -459,13 +490,17 @@ export default function AddRecipeScreen() {
         macros: recipe.macros,
         ingredients: recipe.ingredients,
         instructions: recipe.instructions,
-      });
-      router.back();
-      return;
-    }
+        });
+        router.back();
+        return;
+      }
 
-    addOrUpdateByName(recipe);
-    router.back();
+      await addOrUpdateByName(recipe);
+      router.back();
+    } catch (error) {
+      setSaving(false);
+      Alert.alert(t('addRecipe.title'), (error as Error).message);
+    }
   };
 
   const onDeleteFromEdit = () => {
@@ -475,8 +510,8 @@ export default function AddRecipeScreen() {
       message: t('recipe.deleteConfirm'),
       cancelText: t('common.cancel'),
       confirmText: t('common.delete'),
-      onConfirm: () => {
-        removeRecipe(editId);
+      onConfirm: async () => {
+        await removeRecipe(editId);
         router.replace('/');
       },
     });

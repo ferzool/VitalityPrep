@@ -61,8 +61,8 @@ export default function RecipeDetailScreen() {
       message: t('recipe.deleteConfirm'),
       cancelText: t('common.cancel'),
       confirmText: t('common.delete'),
-      onConfirm: () => {
-        removeRecipe(recipe.id);
+      onConfirm: async () => {
+        await removeRecipe(recipe.id);
         router.back();
       },
     });

@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '../../src/components/Icon';
 import { useTranslation } from '../../src/hooks/useTranslation';
 import { signInWithToken } from '../../src/lib/auth';
+import { confirmAction } from '../../src/lib/confirmAction';
 import {
   enrollPasskey,
   isWebauthnAvailable,
@@ -68,22 +69,31 @@ export default function EnrollScreen() {
     }
   };
 
-  const onResetPasskeys = async () => {
+  const onResetPasskeys = () => {
     if (!enrollSecret.trim()) {
       setErrorMsg(t('auth.enrollSecretRequired'));
       return;
     }
-    setBusy(true);
-    setErrorMsg(null);
-    try {
-      const result = await resetAllPasskeys(enrollSecret.trim());
-      setErrorMsg(t('auth.resetDone').replace('{n}', String(result.deleted)));
-    } catch (err) {
-      const msg = (err as Error).message ?? t('auth.enrollError');
-      setErrorMsg(msg);
-    } finally {
-      setBusy(false);
-    }
+    confirmAction({
+      title: t('auth.resetAll'),
+      message: t('auth.resetConfirm'),
+      cancelText: t('common.cancel'),
+      confirmText: t('common.delete'),
+      onConfirm: async () => {
+        setBusy(true);
+        setErrorMsg(null);
+        try {
+          const result = await resetAllPasskeys(enrollSecret.trim());
+          setErrorMsg(t('auth.resetDone').replace('{n}', String(result.deleted)));
+        } catch (err) {
+          const msg = (err as Error).message ?? t('auth.enrollError');
+          setErrorMsg(msg);
+          throw err;
+        } finally {
+          setBusy(false);
+        }
+      },
+    });
   };
 
   return (

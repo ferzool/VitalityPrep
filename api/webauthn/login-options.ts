@@ -23,7 +23,7 @@ export default async function handler(
     }
     const options = await generateAuthenticationOptions({
       rpID: getRpId(req),
-      userVerification: 'preferred',
+      userVerification: 'required',
       allowCredentials: credentials.map((c) => ({
         id: c.id,
         transports: c.transports as

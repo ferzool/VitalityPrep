@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader } from '../../src/components/AppHeader';
 import { Icon } from '../../src/components/Icon';
 import { QuantityCounter } from '../../src/components/QuantityCounter';
+import { SyncErrorBanner } from '../../src/components/SyncErrorBanner';
 import { useTranslation } from '../../src/hooks/useTranslation';
 import { confirmAction } from '../../src/lib/confirmAction';
 import { useShopping } from '../../src/store/shopping';
@@ -105,6 +106,7 @@ export default function ShoppingListScreen() {
   const insets = useSafeAreaInsets();
   const { fonts, t, isRTL } = useTranslation();
   const items = useShopping((s) => s.items);
+  const syncError = useShopping((s) => s.syncError);
   const clearChecked = useShopping((s) => s.clearChecked);
   const clearAll = useShopping((s) => s.clearAll);
 
@@ -169,6 +171,7 @@ export default function ShoppingListScreen() {
             >
               {t('shopping.sharedHint')}
             </Text>
+            <SyncErrorBanner message={syncError} />
             {total > 0 ? (
               <View
                 style={[

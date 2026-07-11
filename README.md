@@ -13,13 +13,14 @@ Designed to work on Windows — you do **not** need a Mac to run or test it.
 - Tap the basket icon next to any ingredient (or "Alle zur Liste") to push it to the **shopping list**
 - **Shopping list** with check / uncheck, "clear checked" and "clear all" — perfect to use in the store
 - **One-button language toggle** between Deutsch (DE) and فارسی (FA), with RTL-aware layout and the Vazirmatn font for Persian
-- All data persists locally via AsyncStorage — no account, no backend
+- Recipes, the planner, and the shopping list sync through Firestore for two enrolled users; language preference stays on the device
 
 ## Tech stack
 
 - Expo SDK 54 with the new architecture enabled
 - TypeScript, file-based routing via `expo-router`
-- Zustand + AsyncStorage for state persistence
+- Zustand state with Firestore real-time synchronization and Firebase Storage images
+- Passkey / Face ID authentication through the Vercel API routes
 - `@expo-google-fonts` (Plus Jakarta Sans, Inter, Vazirmatn)
 - `@expo/vector-icons` Material Icons
 - `expo-image` for fast remote image loading
@@ -27,7 +28,7 @@ Designed to work on Windows — you do **not** need a Mac to run or test it.
 
 ## Prerequisites (Windows)
 
-1. Install **Node.js 20 LTS** from <https://nodejs.org/>
+1. Install **Node.js 22 LTS** (22.12 or newer) from <https://nodejs.org/>
 2. Install the **Expo Go** app on your iPhone from the App Store
 3. Make sure your iPhone and your Windows PC are on the **same Wi-Fi network**
 
@@ -53,6 +54,8 @@ A QR code will appear in the terminal.
 | --- | --- |
 | Start dev server | `npm run start` |
 | Type-check | `npm run typecheck` |
+| Run data-integrity tests | `npm test` |
+| Validate frontend, API, and web build | `npm run check` |
 | Force iOS QR target | `npm run ios` |
 | Run on Android emulator | `npm run android` |
 
@@ -107,11 +110,11 @@ EAS Build runs the iOS build in the cloud, so you still don't need a Mac. You'll
 ## Adding more recipes
 
 - **In-app:** Tap the green `+` floating button on the Recipes tab.
-- **In code:** Append a `Recipe` object to `src/data/recipes.ts` (both `de` and `fa` strings). After hot reload, the new recipe is merged into existing data automatically (see the `merge` block in `src/store/recipes.ts`).
+- **In code:** Append a `Recipe` object to `src/data/recipes.ts` (both `de` and `fa` strings). Seeds are written when the shared recipe collection is first initialized.
 
 ## Resetting state
 
-Profile tab → "Eigene Rezepte zurücksetzen" removes any user-added recipes. "Einkaufslist leeren" wipes the shopping list. To wipe everything, uninstall Expo Go's data for the project (or change the storage keys in the stores).
+Profile tab → "Eigene Rezepte zurücksetzen" removes recipes created by the signed-in user. "Einkaufsliste leeren" clears the shared shopping list for both users.
 
 ## Why `.npmrc` and `package.json` `overrides` exist
 

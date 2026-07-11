@@ -22,15 +22,15 @@ export function assertEnrollSecret(req: VercelRequest): void {
   if (typeof provided !== 'string' || provided.length === 0) {
     throw new EnrollSecretError('enroll secret required');
   }
-  const a = Buffer.from(provided, 'utf8');
-  const b = Buffer.from(expected, 'utf8');
+  const a = new TextEncoder().encode(provided);
+  const b = new TextEncoder().encode(expected);
   // timingSafeEqual requires equal length; pad to the longer side so we still
   // do a constant-time compare regardless of input length.
   const len = Math.max(a.length, b.length);
-  const ap = Buffer.alloc(len);
-  const bp = Buffer.alloc(len);
-  a.copy(ap);
-  b.copy(bp);
+  const ap = new Uint8Array(len);
+  const bp = new Uint8Array(len);
+  ap.set(a);
+  bp.set(b);
   if (!timingSafeEqual(ap, bp) || a.length !== b.length) {
     throw new EnrollSecretError('invalid enroll secret');
   }
@@ -41,6 +41,13 @@ export class EnrollSecretError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'EnrollSecretError';
+  }
+}
+
+export class EnrollmentClosedError extends Error {
+  constructor() {
+    super('enrollment closed');
+    this.name = 'EnrollmentClosedError';
   }
 }
 
@@ -95,13 +102,15 @@ export async function saveChallenge(
 export async function consumeChallenge(
   id: string,
 ): Promise<StoredChallenge | null> {
-  const ref = getAdminDb().collection('_webauthn_challenges').doc(id);
-  const snap = await ref.get();
-  if (!snap.exists) return null;
-  const data = snap.data() as StoredChallenge;
-  await ref.delete().catch(() => {});
-  if (data.expiresAt < Date.now()) return null;
-  return data;
+  const db = getAdminDb();
+  const ref = db.collection('_webauthn_challenges').doc(id);
+  return db.runTransaction(async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists) return null;
+    const data = snap.data() as StoredChallenge;
+    transaction.delete(ref);
+    return data.expiresAt < Date.now() ? null : data;
+  });
 }
 
 export async function listCredentials(): Promise<StoredCredential[]> {
@@ -109,8 +118,18 @@ export async function listCredentials(): Promise<StoredCredential[]> {
   return snap.docs.map((d) => d.data() as StoredCredential);
 }
 
-export async function saveCredential(cred: StoredCredential): Promise<void> {
-  await getAdminDb().collection('_webauthn_credentials').doc(cred.id).set(cred);
+export async function saveCredentialIfCapacity(
+  cred: StoredCredential,
+): Promise<void> {
+  const db = getAdminDb();
+  const collection = db.collection('_webauthn_credentials');
+  await db.runTransaction(async (transaction) => {
+    const existing = await transaction.get(collection);
+    if (existing.size >= MAX_CREDENTIALS && !existing.docs.some((d) => d.id === cred.id)) {
+      throw new EnrollmentClosedError();
+    }
+    transaction.set(collection.doc(cred.id), cred);
+  });
 }
 
 export async function getCredential(
@@ -152,9 +171,9 @@ export function clearChallengeCookie(res: VercelResponse): void {
 }
 
 export function bufferToBase64Url(buffer: Buffer | Uint8Array): string {
-  return Buffer.from(buffer).toString('base64url');
+  return Buffer.from(Array.from(buffer)).toString('base64url');
 }
 
-export function base64UrlToBuffer(value: string): Buffer {
-  return Buffer.from(value, 'base64url');
+export function base64UrlToBuffer(value: string): Uint8Array<ArrayBuffer> {
+  return Uint8Array.from(Buffer.from(value, 'base64url'));
 }

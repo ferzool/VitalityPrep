@@ -15,6 +15,7 @@ import { AppHeader } from '../../src/components/AppHeader';
 import { CategoryFilter } from '../../src/components/CategoryFilter';
 import { Icon } from '../../src/components/Icon';
 import { SearchBar } from '../../src/components/SearchBar';
+import { SyncErrorBanner } from '../../src/components/SyncErrorBanner';
 import { useTranslation } from '../../src/hooks/useTranslation';
 import { useRecipes } from '../../src/store/recipes';
 import { cardShadow, colors, radius, spacing } from '../../src/theme';
@@ -134,6 +135,7 @@ export default function RecipesScreen() {
   const router = useRouter();
   const { fonts, t, tr, isRTL } = useTranslation();
   const recipes = useRecipes((s) => s.recipes);
+  const syncError = useRecipes((s) => s.syncError);
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category | 'all'>('all');
@@ -197,6 +199,7 @@ export default function RecipesScreen() {
                 {t('recipes.subtitle')}
               </Text>
             </View>
+            <SyncErrorBanner message={syncError} />
             <SearchBar value={query} onChangeText={setQuery} />
             <CategoryFilter value={category} onChange={setCategory} />
             <ScrollView

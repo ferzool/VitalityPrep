@@ -47,11 +47,11 @@ export default async function handler(
       rpName: RP_NAME,
       rpID,
       userName: name,
-      userID: Buffer.from(userId, 'utf8'),
+      userID: new TextEncoder().encode(userId),
       attestationType: 'none',
       authenticatorSelection: {
         residentKey: 'preferred',
-        userVerification: 'preferred',
+        userVerification: 'required',
       },
       excludeCredentials: credentials.map((c) => ({
         id: c.id,

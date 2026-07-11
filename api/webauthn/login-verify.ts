@@ -60,7 +60,7 @@ export default async function handler(
           | ('ble' | 'cable' | 'hybrid' | 'internal' | 'nfc' | 'smart-card' | 'usb')[]
           | undefined,
       },
-      requireUserVerification: false,
+      requireUserVerification: true,
     });
     if (!verification.verified) {
       res.status(401).json({ error: 'verification failed' });
